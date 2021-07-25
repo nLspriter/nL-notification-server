@@ -1,14 +1,13 @@
-from flask import Flask, request, abort
+from flask import Flask, request, abort, make_response, jsonify, Response
 
 app = Flask(__name__)
 
 @app.route('/webhook', methods=['POST'])
 def webhook():
-    if request.method == 'POST':
-        print(request.json)
-        return 'success', 200
-    else:
-        abort(400)
+    print(request.json)
+    data = request.json['challenge']
+    print(data)
+    return make_response(data, 201)
 
 if __name__ == '__main__':
-    app.run()
+    app.run(ssl_context='adhoc', debug=True, port=443)
