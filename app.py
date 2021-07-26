@@ -16,16 +16,16 @@ def webhook(type):
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
             message = str(headers["Twitch-Eventsub-Message-Id"]) + str(headers["Twitch-Eventsub-Message-Timestamp"]) + str(request)
             signature = hmac.new(bytes("wh474r3y0ubl1nd", "latin-1"), bytes(message, "latin-1"), digestmod=hashlib.sha256).hexdigest()
-            print(signature)
             expected_signature = "sha256=" + signature
             print(signature)
             print(expected_signature)
+            print(headers["Twitch-Eventsub-Message-Signature"])
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
                 print("it worked but it didn't get accepted")
-                return 403
+                return make_response(403)
             else:
                 print("it worked bitch")
-                return 201
+                return make_response(201)
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', debug=True, port=443)
