@@ -21,7 +21,7 @@ def webhook(type):
             print("it worked but it didn't get accepted")
             return make_response("failed", 403)
         else:
-            print("it worked bitch")
+            print("it worked bitch!")
             return make_response("success", 201)
 
     elif type == "youtube":
