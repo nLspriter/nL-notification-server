@@ -31,8 +31,10 @@ def webhook(type):
         if challenge:
             return challenge    
         xml_dict = xmltodict.parse(request.data)
-        video_url = xml_dict["feed"]["entry"]["link"]["@href"]
-        print("New video URL: {}".format(video_url))
+        video_info = xml_dict["feed"]["entry"]
+        video_title = video_info["title"]
+        video_url = video_info["link"]["@href"]
+        print("{}: {}".format(video_title, video_url))
         return make_response("success", 201)
 
 if __name__ == '__main__':
