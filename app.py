@@ -14,7 +14,7 @@ def webhook(type):
             print(challenge)
             return make_response(challenge, 201)
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
-            message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + request.json
+            message = str(headers["Twitch-Eventsub-Message-Id"]) + str(headers["Twitch-Eventsub-Message-Timestamp"]) + request.json
             signature = hmac.new("wh474r3y0ubl1nd", message, digestmod=hashlib.sha256).hexdigest()
             expected_signature = "sha256=" + signature
             print(expected_signature)
