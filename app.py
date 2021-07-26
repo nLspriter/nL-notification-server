@@ -9,6 +9,7 @@ def webhook(type):
     if type == "twitch":
         print(request.json)
         headers = request.headers
+        print(headers)
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
             challenge = request.json['challenge']
             print(challenge)
@@ -22,10 +23,10 @@ def webhook(type):
             print(headers["Twitch-Eventsub-Message-Signature"])
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
                 print("it worked but it didn't get accepted")
-                return make_response(403)
+                return make_response("failed", 403)
             else:
                 print("it worked bitch")
-                return make_response(201)
+                return make_response("success", 201)
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', debug=True, port=443)
