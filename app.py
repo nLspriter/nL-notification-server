@@ -21,6 +21,7 @@ def webhook(type):
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
                 return 403
             else:
+                print("it worked bitch")
                 return 201
 
 if __name__ == '__main__':
