@@ -1,7 +1,7 @@
 from flask import Flask, request, abort, make_response, jsonify, Response
+import xmltodict
 import hmac
 import hashlib
-import xmltodict
 
 app = Flask(__name__)
 
