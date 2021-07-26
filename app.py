@@ -2,9 +2,17 @@ from flask import Flask, request, abort, make_response, jsonify, Response
 
 app = Flask(__name__)
 
-@app.route('/webhook', methods=['POST'])
+@app.route('/webhook/twitch', methods=['POST'])
 def webhook():
     print(request.json)
+    data = request.json['challenge']
+    print(data)
+    return make_response(data, 201)
+
+@app.route('/webhook/youtube', methods=['POST'])
+def webhook():
+    print(request.json)
+    print(request.headers)
     data = request.json['challenge']
     print(data)
     return make_response(data, 201)
