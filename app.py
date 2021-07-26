@@ -28,6 +28,9 @@ def webhook(type):
             else:
                 print("it worked bitch")
                 return make_response("success", 201)
+    if type == "youtube":
+        print(request.json)
+        return make_response("success", 201)
 
 if __name__ == '__main__':
     app.run(ssl_context='adhoc', debug=True, port=443)
