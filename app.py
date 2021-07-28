@@ -23,24 +23,28 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(url, title, platform, image):
+    # embed = {
+    #             "content": "<{}>".format(url),
+    #             "username": "newLEGACYinc",
+    #             "embeds": [
+    #                 {
+    #                 "title": "{}".format(title),
+    #                 "url": "{}".format(url),
+    #                 "color": 16711680,
+    #                 "author": {
+    #                     "name": "{}".format(platform)
+    #                 },
+    #                 "timestamp": "2021-07-28T11:58:00.000Z",
+    #                 "image": {
+    #                     "url": "{}".format(image)
+    #                 }
+    #                 }
+    #             ]
+    #         }        
     embed = {
-                "content": "<{}>".format(url),
-                "username": "newLEGACYinc",
-                "embeds": [
-                    {
-                    "title": "{}".format(title),
-                    "url": "{}".format(url),
-                    "color": 16711680,
-                    "author": {
-                        "name": "{}".format(platform)
-                    },
-                    "timestamp": "2021-07-28T11:58:00.000Z",
-                    "image": {
-                        "url": "{}".format(image)
-                    }
-                    }
-                ]
-            }        
+                "content": "@everyone {}\n{}".format(title, url),
+                "username": "newLEGACYinc"
+            }
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
