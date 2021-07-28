@@ -14,8 +14,7 @@ def auth_twitter():
     api = tweepy.API(auth)
     return api
 
-def send_tweet(request, response, api):
-    tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"][0]["title"], request.json["event"]["broadcaster_user_login"])
+def send_tweet(tweet):
     api.update_status(status=tweet)
     print("Tweet sent")
     
@@ -45,8 +44,8 @@ def webhook(type):
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
                 response = requests.request("GET", url, headers=request_header).json()
-                api = auth_twitter()
-                send_tweet(request, response, api)
+                tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"][0]["title"], request.json["event"]["broadcaster_user_login"])
+                send_tweet(tweet)
                 return make_response("success", 201)
 
     elif type == "youtube":
@@ -57,8 +56,10 @@ def webhook(type):
         video_info = xml_dict["feed"]["entry"]
         video_title = video_info["title"]
         video_url = video_info["link"]["@href"]
-        print("{}: {}".format(video_title, video_url))
+        tweet = ("{}\n{}".format(video_title, video_url))
+        send_tweet(tweet)
         return make_response("success", 201)
 
 if __name__ == '__main__':
+    api = auth_twitter()
     app.run(ssl_context='adhoc', debug=True, port=443)
