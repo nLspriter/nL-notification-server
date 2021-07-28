@@ -97,8 +97,8 @@ def webhook(type):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "YouTube", video_thumbnail)
-        except KeyError:
-            print("Video not found")
+        except KeyError as e:
+            print(e)
         return make_response("success", 201)
 
 if __name__ == '__main__':
