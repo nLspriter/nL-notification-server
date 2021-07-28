@@ -22,6 +22,33 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
+def send_discord(url, title, platform, image):
+    embed = {
+                "content": "<{}>".format(url),
+                "username": "newLEGACYinc",
+                "embeds": [
+                    {
+                    "title": "{}".format(title),
+                    "url": "{}".format(url),
+                    "color": 16711680,
+                    "author": {
+                        "name": "{}".format(platform)
+                    },
+                    "timestamp": "2021-07-28T11:58:00.000Z",
+                    "image": {
+                        "url": "{}".format(image)
+                    }
+                    }
+                ]
+            }        
+    result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
+    try:
+        result.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        print(err)
+    else:
+        print("Discord Notification Sent, code {}.".format(result.status_code))
+
     
 @app.route('/webhook/<type>', methods=['GET', 'POST'])
 def webhook(type):
@@ -47,7 +74,7 @@ def webhook(type):
                 'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
-                response = requests.request("GET", url, headers=request_header).json()
+                response = requests.get(url, headers=request_header).json()
                 tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"][0]["title"], request.json["event"]["broadcaster_user_login"])
                 send_tweet(tweet)
                 return make_response("success", 201)
@@ -61,9 +88,11 @@ def webhook(type):
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
+            video_thumbnail = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_url.split("v=")[1])
             if "twitch.tv/newlegacyinc" not in video_title.lower():
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
+                send_discord(video_url, video_title, "YouTube", video_thumbnail)
         except KeyError:
             print("Video not found")
         return make_response("success", 201)
