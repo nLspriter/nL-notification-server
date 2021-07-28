@@ -2,6 +2,7 @@ from flask import Flask, request, abort, make_response, jsonify, Response
 import xmltodict
 import hmac
 import hashlib
+import os
 
 app = Flask(__name__)
 
@@ -15,15 +16,15 @@ def webhook(type):
                 return make_response(challenge, 201)
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
             message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + str(request.get_data(True, True, False))
-            key = bytes("wh474r3y0ubl1nd", "utf-8")
+            key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
             data = bytes(message, "utf-8")
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
-                print("it worked but it didn't get accepted")
+                print("Signature Mismatch")
                 return make_response("failed", 403)
             else:
-                print("it worked bitch!")
+                print("Signature Match")
                 return make_response("success", 201)
 
     elif type == "youtube":
