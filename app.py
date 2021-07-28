@@ -61,7 +61,7 @@ def webhook(type):
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
-            if "twitch.tv/newlegacyincinc" not in video_title.lower():
+            if "twitch.tv/newlegacyinc" not in video_title.lower():
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
         except KeyError:
