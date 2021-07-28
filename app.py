@@ -15,7 +15,7 @@ def auth_twitter():
     return api
 
 def send_tweet(request, response, api):
-    tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"]["title"], request.json["event"]["broadcaster_user_login"])
+    tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"][0]["title"], request.json["event"]["broadcaster_user_login"])
     api.update_status(status=tweet)
     print("Tweet sent")
     
