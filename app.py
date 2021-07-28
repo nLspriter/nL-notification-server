@@ -16,8 +16,12 @@ def auth_twitter():
 
 def send_tweet(tweet):
     api = auth_twitter()
-    api.update_status(status=tweet)
-    print("Tweet sent")
+    try:
+        api.update_status(status=tweet)
+        print("Tweet sent")
+    except tweepy.TweepError as e:
+        print("Tweet could not be sent\n{}".format(e.api_code))
+
     
 @app.route('/webhook/<type>', methods=['GET', 'POST'])
 def webhook(type):
@@ -51,13 +55,17 @@ def webhook(type):
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
         if challenge:
-            return challenge    
+            return make_response(challenge, 201)
         xml_dict = xmltodict.parse(request.data)
-        video_info = xml_dict["feed"]["entry"]
-        video_title = video_info["title"]
-        video_url = video_info["link"]["@href"]
-        tweet = ("{}\n{}".format(video_title, video_url))
-        send_tweet(tweet)
+        try:
+            video_info = xml_dict["feed"]["entry"]
+            video_title = video_info["title"]
+            video_url = video_info["link"]["@href"]
+            if "twitch.tv/newLEGACYinc" not in video_title:
+                tweet = ("{}\n{}".format(video_title, video_url))
+                send_tweet(tweet)
+        except KeyError:
+            print("Video not found")
         return make_response("success", 201)
 
 if __name__ == '__main__':
