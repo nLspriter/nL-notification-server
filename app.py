@@ -22,7 +22,7 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(url, title, platform, image):
+def send_discord(url, title, platform):
     # embed = {
     #             "content": "<{}>".format(url),
     #             "username": "newLEGACYinc",
@@ -92,11 +92,13 @@ def webhook(type):
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
-            video_thumbnail = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_url.split("v=")[1])
-            if "twitch.tv/newlegacyinc" not in video_title.lower():
+            video_id = video_info["yt:videoId"]
+            last_video = {"LAST-VIDEO": video_id}
+            requests.patch("https://api.heroku.com/apps/nl-app-server/config-vars", data=last_video)
+            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != os.environ.get("LAST-VIDEO"):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
-                send_discord(video_url, video_title, "YouTube", video_thumbnail)
+                send_discord(video_url, video_title, "YouTube")
         except KeyError as e:
             print(e)
         return make_response("success", 201)
