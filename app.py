@@ -94,7 +94,11 @@ def webhook(type):
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
             last_video = {"LAST-VIDEO": video_id}
-            requests.patch("https://api.heroku.com/apps/nl-app-server/config-vars", data=last_video)
+            request_header =  {
+                "Authorization": "Bearer {}".format(os.environ.get("HEROKU-OAUTH")),
+                "Accept": "application/vnd.heroku+json; version=3"
+            }
+            requests.patch("https://api.heroku.com/apps/nl-app-server/config-vars", data=last_video, headers=request_header)
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != os.environ.get("LAST-VIDEO"):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
