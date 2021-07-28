@@ -15,7 +15,7 @@ def auth_twitter():
     return api
 
 def send_tweet(request, response, api):
-    tweet = "{}\nhttps://www.twitch.tv/{}/".format(response.json["data"]["title"], request.json["event"]["broadcaster_user_login"])
+    tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"]["title"], request.json["event"]["broadcaster_user_login"])
     api.update_status(status=tweet)
     print("Tweet sent")
     
@@ -44,7 +44,7 @@ def webhook(type):
                 'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
-                response = requests.request("GET", url, headers=request_header)
+                response = requests.request("GET", url, headers=request_header).json()
                 api = auth_twitter()
                 send_tweet(request, response, api)
                 return make_response("success", 201)
