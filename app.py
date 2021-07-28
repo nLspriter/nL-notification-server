@@ -3,15 +3,23 @@ import xmltodict
 import hmac
 import hashlib
 import os
+import tweepy
+import requests
 
 app = Flask(__name__)
+
+def auth_twitter():
+    auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
+    auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
+    api = tweepy.API(auth)
+    return api
 
 @app.route('/webhook/<type>', methods=['GET', 'POST'])
 def webhook(type):
     if type == "twitch":
         headers = request.headers
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
-            challenge = request.json['challenge']
+            challenge = request.json["challenge"]
             if challenge:
                 return make_response(challenge, 201)
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
@@ -25,6 +33,15 @@ def webhook(type):
                 return make_response("failed", 403)
             else:
                 print("Signature Match")
+                url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                request_header =  {
+                'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
+                'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
+                }
+                response = requests.request("GET", url, headers=request_header)
+                tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"]["title"], request.json["event"]["broadcaster_user_login"])
+                api = auth_twitter()
+                api.update_status(status=tweet)
                 return make_response("success", 201)
 
     elif type == "youtube":
