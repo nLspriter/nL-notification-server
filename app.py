@@ -15,10 +15,10 @@ def auth_twitter():
     return api
 
 def send_tweet(tweet):
+    api = auth_twitter()
     api.update_status(status=tweet)
     print("Tweet sent")
     
-
 @app.route('/webhook/<type>', methods=['GET', 'POST'])
 def webhook(type):
     if type == "twitch":
@@ -61,5 +61,4 @@ def webhook(type):
         return make_response("success", 201)
 
 if __name__ == '__main__':
-    api = auth_twitter()
     app.run(ssl_context='adhoc', debug=True, port=443)
