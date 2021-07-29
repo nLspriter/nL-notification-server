@@ -46,7 +46,7 @@ def send_discord(url, title, platform):
     embed = {
                 "content": "@everyone {}\n{}".format(title, url),
                 "username": "newLEGACYinc",
-                "avatar_url": api.me().profile_image_url
+                "avatar_url": api.me().profile_image_url[:63]+api.me.profile_image_url[70:]
             }
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
@@ -103,6 +103,8 @@ def webhook(type):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "YouTube")
+            else:
+                print("Video already posted")
         except KeyError as e:
             print("Video not found")
         return make_response("success", 201)
