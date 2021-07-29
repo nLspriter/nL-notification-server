@@ -46,7 +46,7 @@ def send_discord(url, title, platform):
     embed = {
                 "content": "@everyone {}\n{}".format(title, url),
                 "username": "newLEGACYinc",
-                "avatar_url": api.me().profile_image_url[:63]+api.me().profile_image_url[70:]
+                "avatar_url": api.me().profile_image_url
             }
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
@@ -96,10 +96,9 @@ def webhook(type):
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
-            r = redis.from_url(os.environ.get("REDIS_URL")) 
-            last_video = {"LAST-VIDEO": video_id}
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != r.get("LAST-VIDEO").decode("utf-8"):
-                r.mset(last_video)
+            r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
+            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
+                r.sadd("VIDEOS-POSTED", video_id)
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "YouTube")
