@@ -5,6 +5,7 @@ import hashlib
 import os
 import tweepy
 import requests
+import redis
 
 app = Flask(__name__)
 
@@ -93,18 +94,15 @@ def webhook(type):
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
+            r = redis.from_url(os.environ.get("REDIS_URL")) 
             last_video = {"LAST-VIDEO": video_id}
-            request_header =  {
-                "Authorization": "Bearer {}".format(os.environ.get("HEROKU-OAUTH")),
-                "Accept": "application/vnd.heroku+json; version=3"
-            }
-            requests.patch("https://api.heroku.com/apps/nl-app-server/config-vars", data=last_video, headers=request_header)
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != os.environ.get("LAST-VIDEO"):
+            r.mset(last_video)
+            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != r.get("LAST-VIDEO").decode("utf-8"):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "YouTube")
         except KeyError as e:
-            print(e)
+            print("Video not found")
         return make_response("success", 201)
 
 if __name__ == '__main__':
