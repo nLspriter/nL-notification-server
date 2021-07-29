@@ -42,12 +42,11 @@ def send_discord(url, title, platform):
     #                 }
     #             ]
     #         }    
-    api = auth_twitter()
-    user = api.get_user("newlegacyinc")    
+    api = auth_twitter()  
     embed = {
                 "content": "@everyone {}\n{}".format(title, url),
                 "username": "newLEGACYinc",
-                "avatar_url": user.profile_image_url[:63]+me.profile_image_url[70:]
+                "avatar_url": api.me().profile_image_url
             }
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
