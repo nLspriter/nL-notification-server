@@ -96,8 +96,8 @@ def webhook(type):
             video_id = video_info["yt:videoId"]
             r = redis.from_url(os.environ.get("REDIS_URL")) 
             last_video = {"LAST-VIDEO": video_id}
-            r.mset(last_video)
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id != r.get("LAST-VIDEO").decode("utf-8"):
+                r.mset(last_video)
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "YouTube")
