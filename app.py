@@ -52,6 +52,7 @@ def send_discord(url, title, platform, image=None):
                         }
                     ]
                 }
+    print(embed)
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
