@@ -33,23 +33,24 @@ def send_discord(url, title, platform, image=None):
                 }
     elif platform.lower() == "twitch":
         embed = {
-                    "content": "<{}>".format(url),
+                    "content": "@everyone {}\n{}".format(title, url),
                     "username": "newLEGACYinc",
+                    "avatar_url": api.me().profile_image_url,
                     "embeds": [
                         {
-                        "title": "{}".format(title),
-                        "url": "{}".format(url),
-                        "color": 16711680,
-                        "author": {
-                            "name": "{}".format(platform)
-                        },
-                        "timestamp": "2021-07-28T11:58:00.000Z",
-                        "image": {
-                            "url": "{}".format(image)
-                        }
+                            "title": title,
+                            "url": url,
+                            "color": 16711680,
+                            "author": {
+                                "name": platform
+                            },
+                            "timestamp": "2021-07-28T11:58:00.000Z",
+                            "image": {
+                                "url": image
+                            }
                         }
                     ]
-                }    
+                }
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
