@@ -25,15 +25,16 @@ def send_tweet(tweet):
 
 def send_discord(url, title, platform, image=None):
     api = auth_twitter()
+    content = "@everyone {}\n{}".format(title, url)
     if platform.lower() == "youtube":
         embed = {
-                    "content": "@everyone {}\n{}".format(title, url),
+                    "content": content,
                     "username": "newLEGACYinc",
                     "avatar_url": api.me().profile_image_url
                 }
     elif platform.lower() == "twitch":
         embed = {
-                    "content": "@everyone {}\n{}".format(title, url),
+                    "content": content,
                     "username": "newLEGACYinc",
                     "avatar_url": api.me().profile_image_url,
                     "embeds": [
