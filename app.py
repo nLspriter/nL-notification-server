@@ -36,9 +36,9 @@ def send_discord(url, title, platform, image=None):
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
-                    "avatar_url": api.me().profile_image_url
-                }
-        embed["embeds"] = {
+                    "avatar_url": api.me().profile_image_url,
+                    "embeds": [
+                        {
                             "title": title,
                             "url": url,
                             "color": 16711680,
@@ -50,6 +50,8 @@ def send_discord(url, title, platform, image=None):
                                 "url": image.format(width=320, height=180)
                             }
                         }
+                    ]
+                }
     print(embed)
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
