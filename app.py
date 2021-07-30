@@ -23,31 +23,33 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(url, title, platform):
-    # embed = {
-    #             "content": "<{}>".format(url),
-    #             "username": "newLEGACYinc",
-    #             "embeds": [
-    #                 {
-    #                 "title": "{}".format(title),
-    #                 "url": "{}".format(url),
-    #                 "color": 16711680,
-    #                 "author": {
-    #                     "name": "{}".format(platform)
-    #                 },
-    #                 "timestamp": "2021-07-28T11:58:00.000Z",
-    #                 "image": {
-    #                     "url": "{}".format(image)
-    #                 }
-    #                 }
-    #             ]
-    #         }    
-    api = auth_twitter()  
-    embed = {
-                "content": "@everyone {}\n{}".format(title, url),
-                "username": "newLEGACYinc",
-                "avatar_url": api.me().profile_image_url
-            }
+def send_discord(url, title, platform, image=None):
+    api = auth_twitter()
+    if platform.lower() == "youtube":
+        embed = {
+                    "content": "@everyone {}\n{}".format(title, url),
+                    "username": "newLEGACYinc",
+                    "avatar_url": api.me().profile_image_url
+                }
+    elif platform.lower() == "twitch":
+        embed = {
+                    "content": "<{}>".format(url),
+                    "username": "newLEGACYinc",
+                    "embeds": [
+                        {
+                        "title": "{}".format(title),
+                        "url": "{}".format(url),
+                        "color": 16711680,
+                        "author": {
+                            "name": "{}".format(platform)
+                        },
+                        "timestamp": "2021-07-28T11:58:00.000Z",
+                        "image": {
+                            "url": "{}".format(image)
+                        }
+                        }
+                    ]
+                }    
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
@@ -82,8 +84,10 @@ def webhook(type):
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
                 response = requests.get(url, headers=request_header).json()
-                tweet = "{}\nhttps://www.twitch.tv/{}/".format(response["data"][0]["title"], request.json["event"]["broadcaster_user_login"])
+                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["title"])
+                tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
                 send_tweet(tweet)
+                send_discord(twitch_url, response["data"][0]["title"], "twitch", response["data"][0]["thumbnail_url"])
                 return make_response("success", 201)
 
     elif type == "youtube":
@@ -101,7 +105,7 @@ def webhook(type):
                 r.sadd("VIDEOS-POSTED", video_id)
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
-                send_discord(video_url, video_title, "YouTube")
+                send_discord(video_url, video_title, "youtube")
             else:
                 print("Video already posted")
         except KeyError as e:
