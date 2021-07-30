@@ -36,9 +36,9 @@ def send_discord(url, title, platform, image=None):
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
-                    "avatar_url": api.me().profile_image_url,
-                    "embeds": [
-                        {
+                    "avatar_url": api.me().profile_image_url
+                }
+        embed["embeds"] = {
                             "title": title,
                             "url": url,
                             "color": 16711680,
@@ -50,8 +50,6 @@ def send_discord(url, title, platform, image=None):
                                 "url": image.format(width=320, height=180)
                             }
                         }
-                    ]
-                }
     print(embed)
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
@@ -87,7 +85,7 @@ def webhook(type):
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
                 response = requests.get(url, headers=request_header).json()
-                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["title"])
+                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["broadcaster_user_login"])
                 tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
                 send_tweet(tweet)
                 send_discord(twitch_url, response["data"][0]["title"], "twitch", response["data"][0]["thumbnail_url"])
