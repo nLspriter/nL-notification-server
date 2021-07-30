@@ -85,7 +85,7 @@ def webhook(type):
                 'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
                 }
                 response = requests.get(url, headers=request_header).json()
-                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["broadcaster_user_login"])
+                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
                 tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
                 send_tweet(tweet)
                 send_discord(twitch_url, response["data"][0]["title"], "twitch", response["data"][0]["thumbnail_url"])
