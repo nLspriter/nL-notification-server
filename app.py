@@ -47,7 +47,7 @@ def send_discord(url, title, platform, image=None):
                             },
                             "timestamp": "2021-07-28T11:58:00.000Z",
                             "image": {
-                                "url": image
+                                "url": image.format(width=320, height=180)
                             }
                         }
                     ]
