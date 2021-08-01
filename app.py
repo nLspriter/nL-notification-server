@@ -1,4 +1,4 @@
-from flask import Flask, request, abort, make_response, jsonify, Response
+from flask import Flask, request, make_response
 import xmltodict
 import hmac
 import hashlib
@@ -6,17 +6,27 @@ import os
 import tweepy
 import requests
 import redis
+import json
+import base64
+from oauth2client.service_account import ServiceAccountCredentials
 
 app = Flask(__name__)
 
-def auth_twitter():
-    auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
-    auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
-    api = tweepy.API(auth)
-    return api
+auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
+auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
+api = tweepy.API(auth)
+
+PROJECT_ID = 'nl-notification-server'
+BASE_URL = 'https://fcm.googleapis.com'
+FCM_ENDPOINT = 'v1/projects/' + PROJECT_ID + '/messages:send'
+FCM_URL = BASE_URL + '/' + FCM_ENDPOINT
+SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
+
+sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
+credentials = ServiceAccountCredentials.from_json(sa_json, SCOPES)
+access_token_info = credentials.get_access_token()
 
 def send_tweet(tweet):
-    api = auth_twitter()
     try:
         api.update_status(status=tweet)
         print("Tweet sent")
@@ -24,7 +34,6 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(url, title, platform, image=None):
-    api = auth_twitter()
     content = "@everyone {}\n{}".format(title, url)
     if platform.lower() == "youtube":
         embed = {
@@ -42,6 +51,18 @@ def send_discord(url, title, platform, image=None):
                             "title": title,
                             "url": url,
                             "color": 16711680,
+                            "fields": [
+                                {
+                                "name": "あｓｄasd",
+                                "value": "dfg",
+                                "inline": True
+                                },
+                                {
+                                "name": "weeeeeee",
+                                "value": "dfg",
+                                "inline": True
+                                }
+                            ],
                             "author": {
                                 "name": platform
                             },
@@ -52,7 +73,6 @@ def send_discord(url, title, platform, image=None):
                         }
                     ]
                 }
-    print(embed)
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
@@ -61,6 +81,30 @@ def send_discord(url, title, platform, image=None):
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
+def send_firebase(platform):
+    headers = {
+    'Authorization': 'Bearer ' + access_token_info.access_token,
+    'Content-Type': 'application/json; UTF-8',
+    }
+
+    fcm_message = {
+                    'message': {
+                    'topic': platform,
+                    'notification': {
+                        'title': 'FCM Notification',
+                        'body': 'Notification from FCM'
+                    }
+                }
+            }
+
+    resp = requests.post(FCM_URL, data=json.dumps(fcm_message), headers=headers)
+
+    if resp.status_code == 200:
+        print('Message sent to Firebase for delivery, response:')
+        print(resp.text)
+    else:
+        print('Unable to send message to Firebase')
+        print(resp.text)
     
 @app.route('/webhook/<type>', methods=['GET', 'POST'])
 def webhook(type):
@@ -91,6 +135,7 @@ def webhook(type):
                 tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
                 send_tweet(tweet)
                 send_discord(twitch_url, response["data"][0]["title"], "twitch", response["data"][0]["thumbnail_url"])
+                send_firebase("twitch")
                 return make_response("success", 201)
 
     elif type == "youtube":
@@ -109,6 +154,7 @@ def webhook(type):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_url, video_title, "youtube")
+                send_firebase("youtube")
             else:
                 print("Video already posted")
         except KeyError as e:
