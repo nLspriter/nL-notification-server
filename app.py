@@ -23,7 +23,7 @@ FCM_URL = BASE_URL + '/' + FCM_ENDPOINT
 SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
 
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
-credentials = ServiceAccountCredentials.from_json(sa_json)
+credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 access_token_info = credentials.get_access_token()
 
 def send_tweet(tweet):
