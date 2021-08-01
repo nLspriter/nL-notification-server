@@ -87,15 +87,26 @@ def send_firebase(platform):
     'Content-Type': 'application/json; UTF-8',
     }
 
-    fcm_message = {
-                    'message': {
-                    'topic': platform,
-                    'notification': {
-                        'title': 'FCM Notification',
-                        'body': 'Notification from FCM'
+    if platform.lower() == "youtube":
+        fcm_message = {
+                        'message': {
+                        'topic': platform,
+                        'notification': {
+                            'title': 'YouTube',
+                            'body': 'YouTube Notification'
+                        }
                     }
                 }
-            }
+    elif platform.lower() == "twitch":
+        fcm_message = {
+                        'message': {
+                        'topic': platform,
+                        'notification': {
+                            'title': 'Twitch',
+                            'body': 'Twitch Notification'
+                        }
+                    }
+                }
 
     resp = requests.post(FCM_URL, data=json.dumps(fcm_message), headers=headers)
 
