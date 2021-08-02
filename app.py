@@ -166,8 +166,7 @@ def webhook(type):
         challenge = request.args.get("hub.challenge")
         if challenge:
             return make_response(challenge, 201)
-        print(request.data)
-        xml_dict = xmltodict.parse(request.data)
+        xml_dict = xmltodict.parse(request.data.decode("utf-8"))
         try:
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
