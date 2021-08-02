@@ -78,6 +78,7 @@ def send_discord(data, platform):
 
 def send_firebase(platform, data):
     access_token_info = credentials.get_access_token()
+    url = "https://www.twitch.tv/{}/".format(data["user_login"])
     headers = {
     'Authorization': 'Bearer ' + access_token_info.access_token,
     'Content-Type': 'application/json; UTF-8',
@@ -101,6 +102,7 @@ def send_firebase(platform, data):
         fcm_message = {
                         'message': {
                         'topic': platform,
+                        'body': url,
                         'notification': {
                             'title': 'Twitch',
                             'body': data["title"]
