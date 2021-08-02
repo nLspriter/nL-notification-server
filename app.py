@@ -56,24 +56,14 @@ def send_discord(data, platform):
                             "title": data["title"],
                             "url": url,
                             "color": 16711680,
-                            "fields": [
-                                {
-                                "name": "Followers",
-                                "value": "dfg",
-                                "inline": True
-                                },
-                                {
-                                "name": "Total Views",
-                                "value": "dfg",
-                                "inline": True
-                                }
-                            ],
                             "author": {
-                                "name": platform
+                                "name": "newLEGACYinc"
                             },
-                            "timestamp": "2021-07-28T11:58:00.000Z",
                             "image": {
-                                "url": data["thumbnail_url"].format(width=320, height=180)
+                                "url": data["thumbnail_url"].format(width=400, height=225)
+                            },
+                            "footer": {
+                                "text": "Category/Game: {}".format(data["game_name"])
                             }
                         }
                     ]
@@ -142,7 +132,7 @@ def webhook(type):
                 return make_response("failed", 403)
             else:
                 print("Signature Match")
-                print()
+                print(request.json["subscription"]["type"])
                 if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-STATUS") != "stream.online":
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                     request_header =  {
