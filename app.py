@@ -46,7 +46,7 @@ def send_discord(data, platform):
                 }
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        content = "@everyone {}\n{}".format(data["title"], url)
+        content = "@everyone {}\n<{}>".format(data["title"], url)
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
@@ -58,12 +58,12 @@ def send_discord(data, platform):
                             "color": 16711680,
                             "fields": [
                                 {
-                                "name": "あｓｄasd",
+                                "name": "Followers",
                                 "value": "dfg",
                                 "inline": True
                                 },
                                 {
-                                "name": "weeeeeee",
+                                "name": "Total Views",
                                 "value": "dfg",
                                 "inline": True
                                 }
@@ -143,7 +143,6 @@ def webhook(type):
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
                 if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") != "true":
-                    print("Stream Online")
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                     request_header =  {
                     'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
@@ -158,7 +157,6 @@ def webhook(type):
                     r.set("STREAM-ONLINE", "true")
                     return make_response("success", 201)
                 elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") != "false":
-                    print("Stream Offline")
                     r.set("STREAM-ONLINE", "false")
                     return make_response("success", 201)
                 return make_response("success", 201)
@@ -166,7 +164,7 @@ def webhook(type):
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
         if challenge:
-            return make_response(challenge, 201)
+            return make_response(challenge, 204)
         xml_dict = xmltodict.parse(request.data)
         try:
             video_info = xml_dict["feed"]["entry"]
