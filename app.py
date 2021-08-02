@@ -142,7 +142,7 @@ def webhook(type):
             else:
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
-                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") != True:
+                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") != "true":
                     print("Stream Online")
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                     request_header =  {
@@ -155,11 +155,11 @@ def webhook(type):
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
-                    r.set("STREAM-ONLINE", True)
+                    r.set("STREAM-ONLINE", "true")
                     return make_response("success", 201)
-                elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") != False:
+                elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") != "false":
                     print("Stream Offline")
-                    r.set("STREAM-ONLINE", False)
+                    r.set("STREAM-ONLINE", "false")
                     return make_response("success", 201)
 
     elif type == "youtube":
