@@ -161,6 +161,7 @@ def webhook(type):
                     print("Stream Offline")
                     r.set("STREAM-ONLINE", "false")
                     return make_response("success", 201)
+                return make_response("success", 201)
 
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
