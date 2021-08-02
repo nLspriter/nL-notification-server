@@ -167,11 +167,12 @@ def webhook(type):
         if challenge:
             return make_response(challenge, 201)
         xml_dict = xmltodict.parse(request.data.decode("utf-8"))
+        print(request.data.decode("utf-8"))
         try:
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
-            video_url = video_info["link"]["@href"]
-            video_id = video_info["yt:videoId"]
+            video_url = video_info["link"][0]["@href"]
+            video_id = video_info["id"]
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
