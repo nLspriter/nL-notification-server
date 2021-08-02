@@ -14,7 +14,6 @@ app = Flask(__name__)
 
 auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
 auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
-api = tweepy.API(auth)
 
 PROJECT_ID = 'nl-notification-server'
 BASE_URL = 'https://fcm.googleapis.com'
@@ -29,6 +28,7 @@ r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 r.set("STREAM-ONLINE", "")
 
 def send_tweet(tweet):
+    api = tweepy.API(auth)
     try:
         api.update_status(status=tweet)
         print("Tweet sent")
@@ -36,6 +36,7 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(data, platform):
+    api = tweepy.API(auth)
     if platform.lower() == "youtube":
         content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
         embed = {
@@ -165,6 +166,7 @@ def webhook(type):
         challenge = request.args.get("hub.challenge")
         if challenge:
             return make_response(challenge, 201)
+        print(request.data)
         xml_dict = xmltodict.parse(request.data)
         try:
             video_info = xml_dict["feed"]["entry"]
