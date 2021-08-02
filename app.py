@@ -87,7 +87,7 @@ def send_firebase(platform, data):
         fcm_message = {
                         'message': {
                         'topic': platform,
-                        'notification': {
+                        'data': {
                             'title': 'YouTube',
                             'body': data["title"]
                         }
@@ -97,7 +97,7 @@ def send_firebase(platform, data):
         fcm_message = {
                         'message': {
                         'topic': platform,
-                        'notification': {
+                        'data': {
                             'title': 'Twitch',
                             'body': data["title"]
                         }
