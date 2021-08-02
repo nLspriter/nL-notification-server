@@ -38,7 +38,7 @@ def send_tweet(tweet):
 def send_discord(data, platform):
     api = tweepy.API(auth)
     if platform.lower() == "youtube":
-        content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
+        content = "@everyone {}\n{}".format(data["title"], data["link"][0]["@href"])
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
