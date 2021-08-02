@@ -140,7 +140,7 @@ def webhook(type):
                 return make_response("failed", 403)
             else:
                 print("Signature Match")
-                print(request.json)
+                print(request.json["subscription"]["type"])
                 if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") == False:
                     print("Stream Online")
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
