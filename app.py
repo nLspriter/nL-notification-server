@@ -89,8 +89,10 @@ def send_firebase(platform, data):
                         'topic': platform,
                         'notification': {
                             'title': 'YouTube',
-                            'body': data["title"],
-                            'alert': True
+                            'body': data["title"]
+                        },
+                        "android": {
+                        "direct_boot_ok": True,
                         }
                     }
                 }
@@ -100,8 +102,10 @@ def send_firebase(platform, data):
                         'topic': platform,
                         'notification': {
                             'title': 'Twitch',
-                            'body': data["title"],
-                            'alert': True
+                            'body': data["title"]
+                        },
+                        "android": {
+                        "direct_boot_ok": True,
                         }
                     }
                 }
