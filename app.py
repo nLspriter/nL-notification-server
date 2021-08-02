@@ -102,7 +102,9 @@ def send_firebase(platform, data):
         fcm_message = {
                         'message': {
                         'topic': platform,
-                        'body': url,
+                        'data': {
+                            'url': url,
+                        },
                         'notification': {
                             'title': 'Twitch',
                             'body': data["title"]
