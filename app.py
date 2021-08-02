@@ -38,7 +38,7 @@ def send_tweet(tweet):
 def send_discord(data, platform):
     api = tweepy.API(auth)
     if platform.lower() == "youtube":
-        content = "@everyone {}\n{}".format(data["title"], data["link"][0]["@href"])
+        content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
@@ -164,12 +164,11 @@ def webhook(type):
         challenge = request.args.get("hub.challenge")
         if challenge:
             return make_response(challenge, 201)
-        xml_dict = xmltodict.parse(request.data.decode("utf-8"))
-        print(request.data.decode("utf-8"))
+        xml_dict = xmltodict.parse(request.data)
         try:
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
-            video_url = video_info["link"][0]["@href"]
+            video_url = video_info["link"]["@href"]
             video_id = video_info["id"]
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
                 tweet = ("{}\n{}".format(video_title, video_url))
