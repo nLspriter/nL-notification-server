@@ -24,7 +24,6 @@ SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
 
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
-access_token_info = credentials.get_access_token()
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
 r.set("STREAM-ONLINE", "")
@@ -87,6 +86,7 @@ def send_discord(data, platform):
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
 def send_firebase(platform, data):
+    access_token_info = credentials.get_access_token()
     headers = {
     'Authorization': 'Bearer ' + access_token_info.access_token,
     'Content-Type': 'application/json; UTF-8',
