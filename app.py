@@ -164,7 +164,7 @@ def webhook(type):
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
         if challenge:
-            return make_response(challenge, 204)
+            return make_response(challenge, 201)
         xml_dict = xmltodict.parse(request.data)
         try:
             video_info = xml_dict["feed"]["entry"]
