@@ -27,6 +27,7 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 access_token_info = credentials.get_access_token()
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
+r.set("STREAM-ONLINE", "")
 
 def send_tweet(tweet):
     try:
@@ -141,7 +142,7 @@ def webhook(type):
             else:
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
-                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") == False:
+                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") != True:
                     print("Stream Online")
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                     request_header =  {
@@ -156,7 +157,7 @@ def webhook(type):
                     send_firebase("twitch",response["data"][0])
                     r.set("STREAM-ONLINE", True)
                     return make_response("success", 201)
-                elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") == True:
+                elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") != False:
                     print("Stream Offline")
                     r.set("STREAM-ONLINE", False)
                     return make_response("success", 201)
