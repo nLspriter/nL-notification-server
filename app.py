@@ -26,6 +26,8 @@ sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 access_token_info = credentials.get_access_token()
 
+r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
+
 def send_tweet(tweet):
     try:
         api.update_status(status=tweet)
@@ -33,22 +35,24 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(url, title, platform, image=None):
-    content = "@everyone {}\n{}".format(title, url)
+def send_discord(data, platform):
     if platform.lower() == "youtube":
+        content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
                     "avatar_url": api.me().profile_image_url
                 }
     elif platform.lower() == "twitch":
+        url = "https://www.twitch.tv/{}/".format(data["user_login"])
+        content = "@everyone {}\n{}".format(data["title"], url)
         embed = {
                     "content": content,
                     "username": "newLEGACYinc",
                     "avatar_url": api.me().profile_image_url,
                     "embeds": [
                         {
-                            "title": title,
+                            "title": data["title"],
                             "url": url,
                             "color": 16711680,
                             "fields": [
@@ -68,7 +72,7 @@ def send_discord(url, title, platform, image=None):
                             },
                             "timestamp": "2021-07-28T11:58:00.000Z",
                             "image": {
-                                "url": image.format(width=320, height=180)
+                                "url": data["thumbnail_url"].format(width=320, height=180)
                             }
                         }
                     ]
@@ -81,7 +85,7 @@ def send_discord(url, title, platform, image=None):
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
-def send_firebase(platform):
+def send_firebase(platform, data):
     headers = {
     'Authorization': 'Bearer ' + access_token_info.access_token,
     'Content-Type': 'application/json; UTF-8',
@@ -93,7 +97,7 @@ def send_firebase(platform):
                         'topic': platform,
                         'notification': {
                             'title': 'YouTube',
-                            'body': 'YouTube Notification'
+                            'body': data["title"]
                         }
                     }
                 }
@@ -103,7 +107,7 @@ def send_firebase(platform):
                         'topic': platform,
                         'notification': {
                             'title': 'Twitch',
-                            'body': 'Twitch Notification'
+                            'body': data["title"]
                         }
                     }
                 }
@@ -136,18 +140,23 @@ def webhook(type):
                 return make_response("failed", 403)
             else:
                 print("Signature Match")
-                url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                request_header =  {
-                'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
-                'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
-                }
-                response = requests.get(url, headers=request_header).json()
-                twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
-                send_tweet(tweet)
-                send_discord(twitch_url, response["data"][0]["title"], "twitch", response["data"][0]["thumbnail_url"])
-                send_firebase("twitch")
-                return make_response("success", 201)
+                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-ONLINE") == False:
+                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                    request_header =  {
+                    'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
+                    'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
+                    }
+                    response = requests.get(url, headers=request_header).json()
+                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+                    tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
+                    send_tweet(tweet)
+                    send_discord(response["data"][0], "twitch")
+                    send_firebase("twitch",response["data"][0])
+                    r.set("STREAM-ONLINE", True)
+                    return make_response("success", 201)
+                elif request.json["subscription"]["type"] == "stream.offline" and r.get("STREAM-ONLINE") == True:
+                    r.set("STREAM-ONLINE", False)
+                    return make_response("success", 201)
 
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
@@ -159,13 +168,12 @@ def webhook(type):
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
-            r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
-                r.sadd("VIDEOS-POSTED", video_id)
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
-                send_discord(video_url, video_title, "youtube")
-                send_firebase("youtube")
+                send_discord(video_info, "youtube")
+                send_firebase("youtube", video_info)
+                r.sadd("VIDEOS-POSTED", video_id)
             else:
                 print("Video already posted")
         except KeyError as e:
