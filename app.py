@@ -93,6 +93,7 @@ def send_firebase(platform, data):
                         },
                         "android": {
                         "direct_boot_ok": True,
+                        "priority": "high"
                         }
                     }
                 }
@@ -106,6 +107,7 @@ def send_firebase(platform, data):
                         },
                         "android": {
                         "direct_boot_ok": True,
+                        "priority": "high"
                         }
                     }
                 }
