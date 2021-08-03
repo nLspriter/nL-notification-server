@@ -144,21 +144,22 @@ def webhook(type):
             else:
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
-                if request.json["subscription"]["type"] == "stream.online" and r.get("STREAM-STATUS") != "stream.online":
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                    request_header =  {
-                    'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch",response["data"][0])
-                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
-                else:
-                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                if request.json["subscription"]["type"] == "stream.online":
+                    if r.get("STREAM-STATUS") != "stream.online":
+                        r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                        request_header =  {
+                        'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
+                        }
+                        response = requests.get(url, headers=request_header).json()
+                        twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+                        tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
+                        send_tweet(tweet)
+                        send_discord(response["data"][0], "twitch")
+                        send_firebase("twitch",response["data"][0])
+                    else:
+                        r.set("STREAM-STATUS", request.json["subscription"]["type"])
                 return make_response("success", 201)
 
     elif type == "youtube":
