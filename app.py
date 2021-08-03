@@ -90,8 +90,7 @@ def send_firebase(platform, data):
                         'data': {
                             'url': data["link"]["@href"],
                             'title': 'YouTube',
-                            'body': data["title"],
-                            'imageUrl': "https://img.youtube.com/vi/{}/0.jpg".format(data["yt:videoId"])
+                            'body': data["title"]
                         },
                         "android": {
                             "direct_boot_ok": True,
@@ -107,8 +106,7 @@ def send_firebase(platform, data):
                         'data': {
                             'url': url,
                             'title': 'Twitch',
-                            'body': data["title"],
-                            'imageUrl': data["thumbnail_url"].format(width=1280, height=720)
+                            'body': data["title"]
                         },
                         "android": {
                             "direct_boot_ok": True,
