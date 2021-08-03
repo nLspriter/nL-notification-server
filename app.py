@@ -78,7 +78,6 @@ def send_discord(data, platform):
 
 def send_firebase(platform, data):
     access_token_info = credentials.get_access_token()
-    url = "https://www.twitch.tv/{}/".format(data["user_login"])
     headers = {
     'Authorization': 'Bearer ' + access_token_info.access_token,
     'Content-Type': 'application/json; UTF-8',
@@ -94,12 +93,13 @@ def send_firebase(platform, data):
                             'body': data["title"]
                         },
                         "android": {
-                        "direct_boot_ok": True,
-                        "priority": "high"
+                            "direct_boot_ok": True,
+                            "priority": "high"
                         }
                     }
                 }
     elif platform.lower() == "twitch":
+        url = "https://www.twitch.tv/{}/".format(data["user_login"])
         fcm_message = {
                         'message': {
                         'topic': platform,
@@ -109,8 +109,8 @@ def send_firebase(platform, data):
                             'body': data["title"]
                         },
                         "android": {
-                        "direct_boot_ok": True,
-                        "priority": "high"
+                            "direct_boot_ok": True,
+                            "priority": "high"
                         }
                     }
                 }
