@@ -90,7 +90,8 @@ def send_firebase(platform, data):
                         'data': {
                             'url': data["link"]["@href"],
                             'title': 'YouTube',
-                            'body': data["title"]
+                            'body': data["title"],
+                            'imageUrl': "https://i.ytimg.com/vi/{}/maxresdefault.jpg".format(data["yt:videoId"])
                         },
                         "android": {
                             "direct_boot_ok": True,
@@ -106,7 +107,8 @@ def send_firebase(platform, data):
                         'data': {
                             'url': url,
                             'title': 'Twitch',
-                            'body': data["title"]
+                            'body': data["title"],
+                            'imageUrl': data["thumbnail_url"].format(width=1280, height=720)
                         },
                         "android": {
                             "direct_boot_ok": True,
@@ -168,7 +170,7 @@ def webhook(type):
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
-            video_id = video_info["id"]
+            video_id = video_info["yt:videoId"]
             if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
@@ -178,7 +180,7 @@ def webhook(type):
             else:
                 print("Video already posted")
         except KeyError as e:
-            print("Video not found")
+            print("Property not found: {}".format(e))
         return make_response("success", 201)
 
 if __name__ == '__main__':
