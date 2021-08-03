@@ -84,6 +84,7 @@ def send_firebase(platform, data):
     }
 
     if platform.lower() == "youtube":
+        print("https://i.ytimg.com/vi/{}/maxresdefault.jpg".format(data["yt:videoId"]))
         fcm_message = {
                         'message': {
                         'topic': platform,
