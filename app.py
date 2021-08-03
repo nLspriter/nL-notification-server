@@ -84,7 +84,6 @@ def send_firebase(platform, data):
     }
 
     if platform.lower() == "youtube":
-        print("https://i.ytimg.com/vi/{}/maxresdefault.jpg".format(data["yt:videoId"]))
         fcm_message = {
                         'message': {
                         'topic': platform,
@@ -92,7 +91,7 @@ def send_firebase(platform, data):
                             'url': data["link"]["@href"],
                             'title': 'YouTube',
                             'body': data["title"],
-                            'imageUrl': "https://i.ytimg.com/vi/{}/maxresdefault.jpg".format(data["yt:videoId"])
+                            'imageUrl': "https://img.youtube.com/vi/{}/0.jpg".format(data["yt:videoId"])
                         },
                         "android": {
                             "direct_boot_ok": True,
