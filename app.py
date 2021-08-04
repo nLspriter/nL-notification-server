@@ -158,8 +158,8 @@ def webhook(type):
                         send_tweet(tweet)
                         send_discord(response["data"][0], "twitch")
                         send_firebase("twitch",response["data"][0])
-                    else:
-                        r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                elif request.json["subscription"]["type"] == "stream.offline":
+                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
                 return make_response("success", 201)
 
     elif type == "youtube":
