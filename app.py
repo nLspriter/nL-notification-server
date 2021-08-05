@@ -16,7 +16,7 @@ auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.ge
 auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
 
 BASE_URL = "https://fcm.googleapis.com"
-FCM_ENDPOINT = "v1/projects/{}/messages:send".format(os.environ.get("PROJECT_ID"))
+FCM_ENDPOINT = "v1/projects/{}/messages:send".format(os.environ.get("FCM-PROJECT-ID"))
 FCM_URL = BASE_URL + "/" + FCM_ENDPOINT
 SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
@@ -24,7 +24,6 @@ sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
-r.set("STREAM-STATUS", "")
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
@@ -143,10 +142,12 @@ def webhook(type):
             else:
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
-                print(request.json["event"]["id"])
+
+                if "stream" in request.json["subscription"]["type"]:
+                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                
                 if request.json["subscription"]["type"] == "stream.online":
-                    if r.get("STREAM-STATUS") != "stream.online":
-                        r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
                         url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                         request_header =  {
                         "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
@@ -158,8 +159,8 @@ def webhook(type):
                         send_tweet(tweet)
                         send_discord(response["data"][0], "twitch")
                         send_firebase("twitch",response["data"][0])
-                elif request.json["subscription"]["type"] == "stream.offline":
-                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
+                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                        
                 return make_response("success", 201)
 
     elif type == "youtube":
