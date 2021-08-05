@@ -15,11 +15,10 @@ app = Flask(__name__)
 auth = tweepy.OAuthHandler(os.environ.get("TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
 auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"), os.environ.get("TWITTER-ACCESS-SECRET"))
 
-PROJECT_ID = 'nl-notification-server'
-BASE_URL = 'https://fcm.googleapis.com'
-FCM_ENDPOINT = 'v1/projects/' + PROJECT_ID + '/messages:send'
-FCM_URL = BASE_URL + '/' + FCM_ENDPOINT
-SCOPES = ['https://www.googleapis.com/auth/firebase.messaging']
+BASE_URL = "https://fcm.googleapis.com"
+FCM_ENDPOINT = "v1/projects/{}/messages:send".format(os.environ.get("PROJECT_ID"))
+FCM_URL = BASE_URL + "/" + FCM_ENDPOINT
+SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
@@ -79,18 +78,18 @@ def send_discord(data, platform):
 def send_firebase(platform, data):
     access_token_info = credentials.get_access_token()
     headers = {
-    'Authorization': 'Bearer ' + access_token_info.access_token,
-    'Content-Type': 'application/json; UTF-8',
+    "Authorization": "Bearer " + access_token_info.access_token,
+    "Content-Type": "application/json; UTF-8",
     }
 
     if platform.lower() == "youtube":
         fcm_message = {
-                        'message': {
-                        'topic': platform,
-                        'data': {
-                            'url': data["link"]["@href"],
-                            'title': 'YouTube',
-                            'body': data["title"]
+                        "message": {
+                        "topic": platform,
+                        "data": {
+                            "url": data["link"]["@href"],
+                            "title": "YouTube",
+                            "body": data["title"]
                         },
                         "android": {
                             "direct_boot_ok": True,
@@ -101,12 +100,12 @@ def send_firebase(platform, data):
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
         fcm_message = {
-                        'message': {
-                        'topic': platform,
-                        'data': {
-                            'url': url,
-                            'title': 'Twitch',
-                            'body': data["title"]
+                        "message": {
+                        "topic": platform,
+                        "data": {
+                            "url": url,
+                            "title": "Twitch",
+                            "body": data["title"]
                         },
                         "android": {
                             "direct_boot_ok": True,
@@ -118,13 +117,13 @@ def send_firebase(platform, data):
     resp = requests.post(FCM_URL, data=json.dumps(fcm_message), headers=headers)
 
     if resp.status_code == 200:
-        print('Message sent to Firebase for delivery, response:')
+        print("Message sent to Firebase for delivery, response:")
         print(resp.text)
     else:
-        print('Unable to send message to Firebase')
+        print("Unable to send message to Firebase")
         print(resp.text)
     
-@app.route('/webhook/<type>', methods=['GET', 'POST'])
+@app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
         headers = request.headers
@@ -144,13 +143,14 @@ def webhook(type):
             else:
                 print("Signature Match")
                 print(request.json["subscription"]["type"])
+                print(request.json["event"]["id"])
                 if request.json["subscription"]["type"] == "stream.online":
                     if r.get("STREAM-STATUS") != "stream.online":
                         r.set("STREAM-STATUS", request.json["subscription"]["type"])
                         url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                         request_header =  {
-                        'Authorization': 'Bearer {}'.format(os.environ.get("TWITCH-AUTHORIZATION")),
-                        'Client-ID': os.environ.get("TWITCH-CLIENT-ID")
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
                         }
                         response = requests.get(url, headers=request_header).json()
                         twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
@@ -184,5 +184,5 @@ def webhook(type):
             print("Property not found: {}".format(e))
         return make_response("success", 201)
 
-if __name__ == '__main__':
-    app.run(ssl_context='adhoc', debug=True, port=443)
+if __name__ == "__main__":
+    app.run(ssl_context="adhoc", debug=True, port=443)
