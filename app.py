@@ -23,7 +23,7 @@ SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
-r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True) 
+r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
@@ -126,16 +126,20 @@ def send_firebase(platform, data):
 def webhook(type):
     if type == "twitch":
         headers = request.headers
+        
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
             challenge = request.json["challenge"]
+
             if challenge:
                 return make_response(challenge, 201)
+
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
             message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + str(request.get_data(True, True, False))
             key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
             data = bytes(message, "utf-8")
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
+
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
                 print("Signature Mismatch")
                 return make_response("failed", 403)
@@ -145,9 +149,14 @@ def webhook(type):
 
                 if "stream" in request.json["subscription"]["type"]:
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
-                
+
+                if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                    r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                else: 
+                    print("Stream already posted")
+                    return make_response("success", 201)
+
                 if request.json["subscription"]["type"] == "stream.online":
-                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
                         url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                         request_header =  {
                         "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
@@ -159,30 +168,38 @@ def webhook(type):
                         send_tweet(tweet)
                         send_discord(response["data"][0], "twitch")
                         send_firebase("twitch",response["data"][0])
-                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
                         
                 return make_response("success", 201)
 
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
+
         if challenge:
             return make_response(challenge, 201)
+
         xml_dict = xmltodict.parse(request.data)
+
         try:
             video_info = xml_dict["feed"]["entry"]
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and video_id not in r.smembers("VIDEOS-POSTED"):
+
+            if video_id not in r.smembers("VIDEOS-POSTED"):
+                r.sadd("VIDEOS-POSTED", video_id)
+            else:
+                print("Video already posted")
+                return make_response("success", 201)
+        
+            if "twitch.tv/newlegacyinc" not in video_title.lower():
                 tweet = ("{}\n{}".format(video_title, video_url))
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
-                r.sadd("VIDEOS-POSTED", video_id)
-            else:
-                print("Video already posted")
+
         except KeyError as e:
             print("Property not found: {}".format(e))
+
         return make_response("success", 201)
 
 if __name__ == "__main__":
