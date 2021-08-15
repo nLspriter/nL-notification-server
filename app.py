@@ -150,26 +150,24 @@ def webhook(type):
                 if "stream" in request.json["subscription"]["type"]:
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
-                if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                    r.sadd("STREAM-POSTED", request.json["event"]["id"])
-                    print(r.smembers("STREAM-POSTED"))
-                else: 
-                    print("Stream already posted")
-                    return make_response("success", 201)
-
                 if request.json["subscription"]["type"] == "stream.online":
-                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                        request_header =  {
-                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                        }
-                        response = requests.get(url, headers=request_header).json()
-                        twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                        tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
-                        send_tweet(tweet)
-                        send_discord(response["data"][0], "twitch")
-                        send_firebase("twitch",response["data"][0])
-                        
+
+                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                    else: 
+                        print("Stream already posted")
+                        return make_response("success", 201)
+                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                    request_header =  {
+                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                    }
+                    response = requests.get(url, headers=request_header).json()
+                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+                    tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
+                    send_tweet(tweet)
+                    send_discord(response["data"][0], "twitch")
+                    send_firebase("twitch",response["data"][0])
                 return make_response("success", 201)
 
     elif type == "youtube":
