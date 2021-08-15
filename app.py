@@ -126,7 +126,7 @@ def send_firebase(platform, data):
 def webhook(type):
     if type == "twitch":
         headers = request.headers
-        
+
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
             challenge = request.json["challenge"]
 
@@ -152,6 +152,7 @@ def webhook(type):
 
                 if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
                     r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                    print(r.smembers("STREAM-POSTED"))
                 else: 
                     print("Stream already posted")
                     return make_response("success", 201)
