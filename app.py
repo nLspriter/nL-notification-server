@@ -164,7 +164,7 @@ def webhook(type):
                     }
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
+                    tweet = "{} [{}]\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
