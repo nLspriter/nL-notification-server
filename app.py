@@ -150,6 +150,10 @@ def status(type):
     if type == "youtube":
         return make_response(r.get("LAST-VIDEO"), 201)
 
+@app.route("delete", methods=["GET"])
+def dummy():
+    r.DEL("VIDEOS-POSTED")
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
@@ -229,7 +233,7 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
-            print(r.get("VIDEOS-POSTED"))
+            print(r.smembers("VIDEOS-POSTED"))
             r.rpop("VIDEOS-POSTED")
             r.set("LAST-VIDEO", r.lindex("VIDEOS-POSTED", -1))
             print("Property not found: {}".format(e))
