@@ -150,7 +150,7 @@ def status(type):
     if type == "youtube":
         return make_response(r.get("LAST-VIDEO"), 201)
 
-@app.route("delete", methods=["GET"])
+@app.route("/delete", methods=["GET"])
 def dummy():
     r.DEL("VIDEOS-POSTED")
 
