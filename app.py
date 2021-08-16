@@ -48,7 +48,7 @@ def send_discord(data, platform):
         content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
         embed = {
                     "content": content,
-                    "username": "newLEGACYinc",
+                    "username": os.environ.get("USERNAME"),
                     "avatar_url": api.me().profile_image_url
                 }
     elif platform.lower() == "twitch":
@@ -56,7 +56,7 @@ def send_discord(data, platform):
         content = "@everyone {}\n<{}>".format(data["title"], url)
         embed = {
                     "content": content,
-                    "username": "newLEGACYinc",
+                    "username": os.environ.get("USERNAME"),
                     "avatar_url": api.me().profile_image_url,
                     "embeds": [
                         {
@@ -64,7 +64,7 @@ def send_discord(data, platform):
                             "url": url,
                             "color": 16711680,
                             "author": {
-                                "name": "newLEGACYinc"
+                                "name": os.environ.get("USERNAME")
                             },
                             "image": {
                                 "url": rnd(data["thumbnail_url"].format(width=400, height=225))
@@ -231,7 +231,7 @@ def webhook(type):
 
         except KeyError as e:
             try:
-                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC5iCLgl2ccta5MqTf2VU8bQ")
+                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
                 xml_dict = xmltodict.parse(req.content)
                 video_id = xml_dict["feed"]["entry"][0]["yt:videoId"]
                 r.set("LAST-VIDEO", video_id)
