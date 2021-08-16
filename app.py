@@ -140,6 +140,11 @@ def thumbnail(url):
     else:
         print("Unable to download image")
 
+@app.route("/status/<type>", methods=["GET"])
+def status(type):
+    if type == "twitch":
+        return make_response(r.get("STREAM-STATUS"), 201)
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
