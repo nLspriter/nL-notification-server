@@ -143,7 +143,12 @@ def thumbnail(url):
 @app.route("/status/<type>", methods=["GET"])
 def status(type):
     if type == "twitch":
-        return make_response(r.get("STREAM-STATUS"), 201)
+        if r.get("STREAM-STATUS") == "stream.online":
+            return make_response(r.get("STREAM-TITLE"), 201)
+        else:
+            return  make_response("Offline", 201)
+    if type == "youtube":
+        return make_response(r.get("LAST-VIDEO"), 201)
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
@@ -174,12 +179,12 @@ def webhook(type):
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
                 if request.json["subscription"]["type"] == "stream.online":
-
                     if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
                         r.sadd("STREAM-POSTED", request.json["event"]["id"])
                     else: 
                         print("Stream already posted")
                         return make_response("success", 201)
+
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
                     request_header =  {
                     "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
@@ -188,6 +193,7 @@ def webhook(type):
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
                     tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                    r.set("STREAM-TITLE", response["data"][0]["title"])
                     thumbnail(response["data"][0]["thumbnail_url"].format(width=1280, height=720))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
@@ -220,8 +226,11 @@ def webhook(type):
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
+                r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
+            r.rpop("VIDEOS-POSTED")
+            r.set("LAST-VIDEO", r.lindex("VIDEOS-POSTED", -1))
             print("Property not found: {}".format(e))
 
         return make_response("success", 201)
