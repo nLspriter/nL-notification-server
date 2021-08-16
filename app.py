@@ -32,7 +32,6 @@ def rnd(url):
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
-    youtube_thumbnail()
     try:
         if os.path.exists("thumbnail.jpg"):
             api.update_with_media("thumbnail.jpg", status=tweet)
@@ -211,6 +210,7 @@ def webhook(type):
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
                 tweet = ("{}\n{}".format(video_title, video_url))
+                youtube_thumbnail(video_id)
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
