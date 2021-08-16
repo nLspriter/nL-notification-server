@@ -9,6 +9,8 @@ import redis
 import json
 import base64
 from oauth2client.service_account import ServiceAccountCredentials
+from random import choice
+from string import ascii_letters
 
 app = Flask(__name__)
 
@@ -24,6 +26,9 @@ sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+
+def rnd(url):
+    return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
@@ -58,7 +63,7 @@ def send_discord(data, platform):
                                 "name": "newLEGACYinc"
                             },
                             "image": {
-                                "url": data["thumbnail_url"].format(width=400, height=225)
+                                "url": rnd(data["thumbnail_url"].format(width=400, height=225))
                             },
                             "footer": {
                                 "text": "Category/Game: {}".format(data["game_name"])
