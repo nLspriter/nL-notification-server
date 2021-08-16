@@ -150,10 +150,6 @@ def status(type):
     if type == "youtube":
         return make_response(r.get("LAST-VIDEO"), 201)
 
-@app.route("/delete", methods=["GET"])
-def dummy():
-    r.delete("VIDEOS-POSTED")
-
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
@@ -218,7 +214,7 @@ def webhook(type):
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
 
-            if video_id not in r.smembers("VIDEOS-POSTED"):
+            if video_id not in r.rpush("VIDEOS-POSTED"):
                 r.sadd("VIDEOS-POSTED", video_id)
             else:
                 print("Video already posted")
@@ -233,10 +229,7 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
-<<<<<<< HEAD
-            print(r.smembers("VIDEOS-POSTED"))
-=======
->>>>>>> parent of 0b067b6 (Update app.py)
+            print(r.get("VIDEOS-POSTED"))
             r.rpop("VIDEOS-POSTED")
             r.set("LAST-VIDEO", r.lindex("VIDEOS-POSTED", -1))
             print("Property not found: {}".format(e))
