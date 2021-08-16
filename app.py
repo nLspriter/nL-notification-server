@@ -132,7 +132,9 @@ def send_firebase(platform, data):
         print(resp.text)
     
 def youtube_thumbnail(vid):
-    request = requests.get("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(vid), stream=True)
+    url = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(vid)
+    print(url)
+    request = requests.get(url, stream=True)
     if request.status_code == 200:
         with open("thumbnail.jpg", 'wb') as image:
             for chunk in request:
