@@ -150,6 +150,7 @@ def status(type):
     if type == "youtube":
         return make_response(r.get("LAST-VIDEO"), 201)
 
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
@@ -214,7 +215,7 @@ def webhook(type):
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
 
-            if video_id not in r.rpush("VIDEOS-POSTED"):
+            if video_id not in r.smembers("VIDEOS-POSTED"):
                 r.sadd("VIDEOS-POSTED", video_id)
             else:
                 print("Video already posted")
@@ -229,11 +230,10 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
-            print(r.get("VIDEOS-POSTED"))
-            r.rpop("VIDEOS-POSTED")
-            r.set("LAST-VIDEO", r.lindex("VIDEOS-POSTED", -1))
-            print("Property not found: {}".format(e))
-
+            xml_dict = xmltodict.parse(requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC5iCLgl2ccta5MqTf2VU8bQ"))
+            video_id = xml_dict["feed"]["entry"][0]["yt:videoId"]
+            print(video_id)
+            r.set("LAST-VIDEO", video_id)
         return make_response("success", 201)
 
 if __name__ == "__main__":
