@@ -9,6 +9,8 @@ import redis
 import json
 import base64
 from oauth2client.service_account import ServiceAccountCredentials
+from random import choice
+from string import ascii_letters
 
 app = Flask(__name__)
 
@@ -25,11 +27,18 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
+def rnd(url):
+    return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
+
 def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
-        api.update_status(status=tweet)
-        print("Tweet sent")
+        if os.path.exists("thumbnail.jpg"):
+            api.update_with_media("thumbnail.jpg", status=tweet)
+            print("Tweet sent")
+            os.remove("thumbnail.jpg")
+        else:
+            api.update_status(status=tweet)
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
@@ -58,7 +67,7 @@ def send_discord(data, platform):
                                 "name": "newLEGACYinc"
                             },
                             "image": {
-                                "url": data["thumbnail_url"].format(width=400, height=225)
+                                "url": rnd(data["thumbnail_url"].format(width=400, height=225))
                             },
                             "footer": {
                                 "text": "Category/Game: {}".format(data["game_name"])
@@ -122,6 +131,15 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
     
+def thumbnail(url):
+    request = requests.get(url, stream=True)
+    if request.status_code == 200:
+        with open("thumbnail.jpg", 'wb') as image:
+            for chunk in request:
+                image.write(chunk)
+    else:
+        print("Unable to download image")
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
@@ -164,7 +182,8 @@ def webhook(type):
                     }
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{} [{}]\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                    tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                    thumbnail(response["data"][0]["thumbnail_url"].format(width=1280, height=720))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
@@ -191,7 +210,9 @@ def webhook(type):
                 return make_response("success", 201)
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
-                tweet = ("{}\n{}".format(video_title, video_url))
+                tweet = ("{}\n\n{}".format(video_title, video_url))
+                url = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id)
+                thumbnail(url)
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
