@@ -230,10 +230,16 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
-            xml_dict = xmltodict.parse(requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC5iCLgl2ccta5MqTf2VU8bQ"))
-            video_id = xml_dict["feed"]["entry"][0]["yt:videoId"]
-            print(video_id)
-            r.set("LAST-VIDEO", video_id)
+            try:
+                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC5iCLgl2ccta5MqTf2VU8bQ")
+                print(req.content)
+                xml_dict = xmltodict.parse(req.content)
+                video_id = xml_dict["feed"]["entry"][0]["yt:videoId"]
+                print(video_id)
+                r.set("LAST-VIDEO", video_id)
+            except KeyError as e:
+                print("No videos found")
+                r.set("LAST-VIDEO", "None")
         return make_response("success", 201)
 
 if __name__ == "__main__":
