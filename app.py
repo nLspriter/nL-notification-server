@@ -211,8 +211,7 @@ def webhook(type):
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
                 tweet = ("{}\n\n{}".format(video_title, video_url))
-                url = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id)
-                thumbnail(url)
+                thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
