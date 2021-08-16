@@ -131,9 +131,7 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
     
-def youtube_thumbnail(vid):
-    url = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(vid)
-    print(url)
+def thumbnail(url):
     request = requests.get(url, stream=True)
     if request.status_code == 200:
         with open("thumbnail.jpg", 'wb') as image:
@@ -184,7 +182,8 @@ def webhook(type):
                     }
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{}\n{}".format(response["data"][0]["title"], twitch_url)
+                    tweet = "{}\n\n{}".format(response["data"][0]["title"], twitch_url)
+                    thumbnail(data["thumbnail_url"].format(width=1280, height=720))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
@@ -211,8 +210,9 @@ def webhook(type):
                 return make_response("success", 201)
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
-                tweet = ("{}\n{}".format(video_title, video_url))
-                youtube_thumbnail(video_id)
+                tweet = ("{}\n\n{}".format(video_title, video_url))
+                url = "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id)
+                thumbnail(url)
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
