@@ -32,9 +32,14 @@ def rnd(url):
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
+    youtube_thumbnail()
     try:
-        api.update_status(status=tweet)
-        print("Tweet sent")
+        if os.path.exists("thumbnail.jpg"):
+            api.update_with_media("thumbnail.jpg", status=tweet)
+            print("Tweet sent")
+            os.remove("thumbnail.jpg")
+        else:
+            api.update_status(status=tweet)
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
@@ -127,6 +132,15 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
     
+def youtube_thumbnail(vid):
+    request = requests.get("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(vid), stream=True)
+    if request.status_code == 200:
+        with open("thumbnail.jpg", 'wb') as image:
+            for chunk in request:
+                image.write(chunk)
+    else:
+        print("Unable to download image")
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
