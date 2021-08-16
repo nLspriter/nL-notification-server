@@ -233,7 +233,10 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
 
         except KeyError as e:
+<<<<<<< HEAD
             print(r.smembers("VIDEOS-POSTED"))
+=======
+>>>>>>> parent of 0b067b6 (Update app.py)
             r.rpop("VIDEOS-POSTED")
             r.set("LAST-VIDEO", r.lindex("VIDEOS-POSTED", -1))
             print("Property not found: {}".format(e))
