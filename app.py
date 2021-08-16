@@ -152,7 +152,7 @@ def status(type):
 
 @app.route("/delete", methods=["GET"])
 def dummy():
-    r.DEL("VIDEOS-POSTED")
+    r.delete("VIDEOS-POSTED")
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
