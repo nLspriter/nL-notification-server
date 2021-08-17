@@ -148,7 +148,11 @@ def status(type):
         else:
             return  make_response("Offline", 201)
     if type == "youtube":
-        return make_response(r.get("LAST-VIDEO"), 201)
+        data = {
+            "video_id": r.get("LAST-VIDEO"),
+            "video_title": r.get("LAST-VIDEO-TITLE")
+        }
+        return make_response(data, 201)
 
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
@@ -228,13 +232,17 @@ def webhook(type):
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
                 r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
 
         except KeyError as e:
             try:
                 req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
                 xml_dict = xmltodict.parse(req.content)
-                video_id = xml_dict["feed"]["entry"][0]["yt:videoId"]
+                video_info = xml_dict["feed"]["entry"][0]
+                video_id = video_info["yt:videoId"]
+                video_title = video_info["title"]
                 r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
             except KeyError as e:
                 print("No videos found")
                 r.set("LAST-VIDEO", "None")
