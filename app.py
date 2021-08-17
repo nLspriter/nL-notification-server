@@ -140,19 +140,14 @@ def thumbnail(url):
     else:
         print("Unable to download image")
 
-@app.route("/status/<type>", methods=["GET"])
-def status(type):
-    if type == "twitch":
-        if r.get("STREAM-STATUS") == "stream.online":
-            return make_response(r.get("STREAM-TITLE"), 201)
-        else:
-            return  make_response("Offline", 201)
-    if type == "youtube":
-        data = {
-            "video_id": r.get("LAST-VIDEO"),
-            "video_title": r.get("LAST-VIDEO-TITLE")
-        }
-        return make_response(data, 201)
+@app.route("/status", methods=["GET"])
+def status():
+    data = {
+        "stream_status": r.get("STREAM-TITLE"),
+        "video_id": r.get("LAST-VIDEO"),
+        "video_title": r.get("LAST-VIDEO-TITLE")
+    }
+    return make_response(data, 201)
 
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
@@ -203,6 +198,8 @@ def webhook(type):
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
+                else:
+                    r.set("STREAM-TITLE", "Offline")
                 return make_response("success", 201)
 
     elif type == "youtube":
@@ -235,6 +232,7 @@ def webhook(type):
                 r.set("LAST-VIDEO-TITLE", video_title)
 
         except KeyError as e:
+            print("Video deleted, retrieving last video from channel")
             try:
                 req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
                 xml_dict = xmltodict.parse(req.content)
