@@ -54,7 +54,7 @@ def send_discord(data, platform):
                 }
     elif platform.lower() == "twitch":
         if os.path.exists("thumbnail.jpg"):
-            thumbnail = rnd(data["thumbnail_url"].format(width=400, height=225))
+            thumbnail = rnd("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(data["user_login"]))
         else:
             thumbnail = "https://static-cdn.jtvnw.net/jtv_user_pictures/1678dece-5b20-462b-9fd2-fa6b785a6272-profile_banner-480.png"
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
@@ -204,7 +204,7 @@ def webhook(type):
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
                     tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
                     r.set("STREAM-TITLE", response["data"][0]["title"])
-                    thumbnail(response["data"][0]["thumbnail_url"].format(width=1280, height=720))
+                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(data["user_login"]))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
