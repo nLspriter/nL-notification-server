@@ -37,7 +37,6 @@ def send_tweet(tweet):
         if os.path.exists("thumbnail.jpg"):
             api.update_with_media("thumbnail.jpg", status=tweet)
             print("Tweet sent")
-            os.remove("thumbnail.jpg")
         else:
             api.update_status(status=tweet)
     except tweepy.TweepError as e:
@@ -54,9 +53,9 @@ def send_discord(data, platform):
                 }
     elif platform.lower() == "twitch":
         if os.path.exists("thumbnail.jpg"):
-            thumbnail = rnd("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(data["user_login"]))
+            thumbnail = rnd(data["thumbnail_url"].format(width=400, height=225))
         else:
-            thumbnail = "https://static-cdn.jtvnw.net/jtv_user_pictures/1678dece-5b20-462b-9fd2-fa6b785a6272-profile_banner-480.png"
+            thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
         content = "@everyone {}\n<{}>".format(data["title"], url)
         embed = {
@@ -210,7 +209,6 @@ def webhook(type):
                     send_firebase("twitch",response["data"][0])
                 else:
                     r.set("STREAM-TITLE", "Offline")
-                return make_response("success", 201)
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
 
@@ -240,7 +238,7 @@ def webhook(type):
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
 
-        except KeyError as e:
+        except KeyError:
             print("Video deleted, retrieving last video from channel")
             try:
                 req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
@@ -250,10 +248,12 @@ def webhook(type):
                 video_title = video_info["title"]
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
-            except KeyError as e:
+            except KeyError:
                 print("No videos found")
                 r.set("LAST-VIDEO", "None")
-        return make_response("success", 201)
+    if os.path.exists("thumbnail.jpg"):
+        os.remove("thumbnail.jpg")
+    return make_response("success", 201)
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
