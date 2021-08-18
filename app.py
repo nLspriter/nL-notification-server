@@ -35,12 +35,8 @@ def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
-            image = cv2.imread("thumbnail.jpg", 0)
-            if cv2.countNonZero(image) == 0:
-                api.update_status(status=tweet)
-            else:
-                api.update_with_media("thumbnail.jpg", status=tweet)
-                print("Tweet sent")
+            api.update_with_media("thumbnail.jpg", status=tweet)
+            print("Tweet sent")
             os.remove("thumbnail.jpg")
         else:
             api.update_status(status=tweet)
@@ -57,6 +53,10 @@ def send_discord(data, platform):
                     "avatar_url": api.me().profile_image_url
                 }
     elif platform.lower() == "twitch":
+        if os.path.exists("thumbnail.jpg"):
+            thumbnail = rnd(data["thumbnail_url"].format(width=400, height=225))
+        else:
+            thumbnail = "https://static-cdn.jtvnw.net/jtv_user_pictures/1678dece-5b20-462b-9fd2-fa6b785a6272-profile_banner-480.png"
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
         content = "@everyone {}\n<{}>".format(data["title"], url)
         embed = {
@@ -72,7 +72,7 @@ def send_discord(data, platform):
                                 "name": os.environ.get("USERNAME")
                             },
                             "image": {
-                                "url": rnd(data["thumbnail_url"].format(width=400, height=225))
+                                "url": thumbnail
                             },
                             "footer": {
                                 "text": "Category/Game: {}".format(data["game_name"])
@@ -142,6 +142,11 @@ def thumbnail(url):
         with open("thumbnail.jpg", 'wb') as image:
             for chunk in request:
                 image.write(chunk)
+        
+        imagecheck = cv2.imread("thumbnail.jpg", 0)
+        if cv2.countNonZero(imagecheck) == 0:
+            print("Thumbnail is empty")
+            os.remove("thumbnail.jpg")
     else:
         print("Unable to download image")
 
