@@ -44,41 +44,42 @@ def send_tweet(tweet):
 
 def send_discord(data, platform):
     api = tweepy.API(auth)
+    
+    embed = {
+                "username": os.environ.get("USERNAME"),
+                "avatar_url": api.me().profile_image_url
+            }
+
     if platform.lower() == "youtube":
-        content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
-        embed = {
-                    "content": content,
-                    "username": os.environ.get("USERNAME"),
-                    "avatar_url": api.me().profile_image_url
-                }
+        url = data["link"]["@href"]
+        content = "@everyone {}\n{}".format(data["title"], url)
+
     elif platform.lower() == "twitch":
         if os.path.exists("thumbnail.jpg"):
             thumbnail = rnd(data["thumbnail_url"].format(width=400, height=225))
         else:
             thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
+
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
         content = "@everyone {}\n<{}>".format(data["title"], url)
-        embed = {
-                    "content": content,
-                    "username": os.environ.get("USERNAME"),
-                    "avatar_url": api.me().profile_image_url,
-                    "embeds": [
-                        {
-                            "title": data["title"],
-                            "url": url,
-                            "color": 16711680,
-                            "author": {
-                                "name": os.environ.get("USERNAME")
-                            },
-                            "image": {
-                                "url": thumbnail
-                            },
-                            "footer": {
-                                "text": "Category/Game: {}".format(data["game_name"])
+        embed["embeds"] = [
+                            {
+                                "title": data["title"],
+                                "url": url,
+                                "color": 16711680,
+                                "author": {
+                                    "name": os.environ.get("USERNAME")
+                                },
+                                "image": {
+                                    "url": thumbnail
+                                },
+                                "footer": {
+                                    "text": "Category/Game: {}".format(data["game_name"])
+                                }
                             }
-                        }
-                    ]
-                }
+                        ]
+    
+    embed["content"] = content
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
@@ -95,36 +96,23 @@ def send_firebase(platform, data):
     }
 
     if platform.lower() == "youtube":
-        fcm_message = {
-                        "message": {
-                        "topic": platform,
-                        "data": {
-                            "url": data["link"]["@href"],
-                            "title": "YouTube",
-                            "body": data["title"]
-                        },
-                        "android": {
-                            "direct_boot_ok": True,
-                            "priority": "high"
-                        }
-                    }
-                }
+        url = data["link"]["@href"]
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        fcm_message = {
-                        "message": {
-                        "topic": platform,
-                        "data": {
-                            "url": url,
-                            "title": "Twitch",
-                            "body": data["title"]
-                        },
-                        "android": {
-                            "direct_boot_ok": True,
-                            "priority": "high"
-                        }
+    fcm_message = {
+                    "message": {
+                    "topic": platform,
+                    "data": {
+                        "url": url,
+                        "title": platform.capitalize(),
+                        "body": data["title"]
+                    },
+                    "android": {
+                        "direct_boot_ok": True,
+                        "priority": "high"
                     }
                 }
+            }
 
     resp = requests.post(FCM_URL, data=json.dumps(fcm_message), headers=headers)
 
