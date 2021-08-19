@@ -13,7 +13,6 @@ from random import choice
 from string import ascii_letters
 import cv2
 import instagrapi
-import ig_challenge
 
 app = Flask(__name__)
 
@@ -31,7 +30,6 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 igclient = instagrapi.Client()
-igclient.challenge_code_handler = ig_challenge.challenge_code_handler
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
