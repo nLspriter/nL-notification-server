@@ -12,6 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from random import choice
 from string import ascii_letters
 import cv2
+import instabot
 
 app = Flask(__name__)
 
@@ -25,6 +26,9 @@ SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
+
+igbot = instabot.Bot()
+igbot.login(username = os.environ.get("INSTAGRAM-USERNAME"), password = os.environ.get("INSTAGRAM-PASSWORD"))
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
@@ -135,6 +139,9 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
     
+def send_instagram(caption):
+    igbot.upload_photo("thumbnail.jpg", caption)
+
 def thumbnail(url):
     request = requests.get(url, stream=True)
     if request.status_code == 200:
@@ -201,10 +208,11 @@ def webhook(type):
                     }
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                    message = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
                     r.set("STREAM-TITLE", response["data"][0]["title"])
                     thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
-                    send_tweet(tweet)
+                    send_tweet(message)
+                    send_instagram(message)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
                 else:
@@ -230,9 +238,10 @@ def webhook(type):
                 return make_response("success", 201)
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
-                tweet = ("{}\n\n{}".format(video_title, video_url))
+                message = ("{}\n\n{}".format(video_title, video_url))
                 thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                send_tweet(tweet)
+                send_tweet(message)
+                send_instagram(message)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
                 r.set("LAST-VIDEO", video_id)
