@@ -28,7 +28,6 @@ sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 igbot = instabot.Bot()
-igbot.login(username = os.environ.get("INSTAGRAM-USERNAME"), password = os.environ.get("INSTAGRAM-PASSWORD"))
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
@@ -140,6 +139,7 @@ def send_firebase(platform, data):
         print(resp.text)
     
 def send_instagram(caption):
+    igbot.login(username = os.environ.get("INSTAGRAM-USERNAME"), password = os.environ.get("INSTAGRAM-PASSWORD"))
     igbot.upload_photo("thumbnail.jpg", caption)
 
 def thumbnail(url):
