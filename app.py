@@ -61,10 +61,10 @@ def send_discord(data, platform):
             thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        content = "@everyone {}\n<{}>".format(data["title"], url)
+        content = "@everyone We're live! \n<{}>".format(url)
         embed["embeds"] = [
                             {
-                                "title": data["title"],
+                                "title": r.get("STREAM-TITLE"),
                                 "url": url,
                                 "color": 16711680,
                                 "author": {
@@ -105,7 +105,7 @@ def send_firebase(platform, data):
                     "data": {
                         "url": url,
                         "title": platform.capitalize(),
-                        "body": data["title"]
+                        "body": r.get("STREAM-TITLE")
                     },
                     "android": {
                         "direct_boot_ok": True,
@@ -175,26 +175,38 @@ def webhook(type):
                 if "stream" in request.json["subscription"]["type"]:
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
-                if request.json["subscription"]["type"] == "stream.online":
-                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
-                    else: 
-                        print("Stream already posted")
-                        return make_response("success", 201)
+                if r.get("STREAM-STATUS") == "stream.online":
+                    try:
+                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                            r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                        else: 
+                            print("Stream already posted")
+                            return make_response("success", 201)
 
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                    request_header =  {
-                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
-                    r.set("STREAM-TITLE", response["data"][0]["title"])
-                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch",response["data"][0])
+                    except:
+                        pass
+
+                    finally:
+                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                        request_header =  {
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                        }
+                        response = requests.get(url, headers=request_header).json()
+                        twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+
+                        if request.json["subscription"]["type"] == "channel.update":
+                            r.set("STREAM-TITLE", request.json["event"]["title"])
+                            tweet = "{} [{}]\n\n{}".format(request.json["event"]["title"],request.json["event"]["category_name"], twitch_url)
+                        else:
+                            r.set("STREAM-TITLE", response["data"][0]["title"])
+                            tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                        print(r.get("STREAM-TITLE"))
+                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
+                        send_tweet(tweet)
+                        send_discord(response["data"][0], "twitch")
+                        send_firebase("twitch",response["data"][0])
+                    
                 else:
                     r.set("STREAM-TITLE", "Offline")
     elif type == "youtube":
