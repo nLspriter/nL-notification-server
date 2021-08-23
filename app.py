@@ -64,7 +64,7 @@ def send_discord(data, platform):
         content = "@everyone {}\n<{}>".format(data["title"], url)
         embed["embeds"] = [
                             {
-                                "title": data["title"],
+                                "title": r.get("STREAM-TITLE"),
                                 "url": url,
                                 "color": 16711680,
                                 "author": {
@@ -105,7 +105,7 @@ def send_firebase(platform, data):
                     "data": {
                         "url": url,
                         "title": platform.capitalize(),
-                        "body": data["title"]
+                        "body": r.get("STREAM-TITLE")
                     },
                     "android": {
                         "direct_boot_ok": True,
@@ -175,7 +175,7 @@ def webhook(type):
                 if "stream" in request.json["subscription"]["type"]:
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
-                if request.json["subscription"]["type"] == "stream.online":
+                if r.get("STREAM-STATUS") == "stream.online":
                     if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
                         r.sadd("STREAM-POSTED", request.json["event"]["id"])
                     else: 
