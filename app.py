@@ -176,25 +176,31 @@ def webhook(type):
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
                 if r.get("STREAM-STATUS") == "stream.online":
-                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
-                    else: 
-                        print("Stream already posted")
-                        return make_response("success", 201)
+                    try:
+                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                            r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                        else: 
+                            print("Stream already posted")
+                            return make_response("success", 201)
 
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                    request_header =  {
-                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
-                    r.set("STREAM-TITLE", response["data"][0]["title"])
-                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch",response["data"][0])
+                    except:
+                        pass
+
+                    finally:
+                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                        request_header =  {
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                        }
+                        response = requests.get(url, headers=request_header).json()
+                        twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+                        tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                        r.set("STREAM-TITLE", response["data"][0]["title"])
+                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
+                        send_tweet(tweet)
+                        send_discord(response["data"][0], "twitch")
+                        send_firebase("twitch",response["data"][0])
+                    
                 else:
                     r.set("STREAM-TITLE", "Offline")
     elif type == "youtube":
