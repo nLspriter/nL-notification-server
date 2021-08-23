@@ -97,15 +97,17 @@ def send_firebase(platform, data):
 
     if platform.lower() == "youtube":
         url = data["link"]["@href"]
+        title = data["title"]
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
+        title = r.get("STREAM-TITLE")
     fcm_message = {
                     "message": {
                     "topic": platform,
                     "data": {
                         "url": url,
                         "title": platform.capitalize(),
-                        "body": r.get("STREAM-TITLE")
+                        "body": title
                     },
                     "android": {
                         "direct_boot_ok": True,
