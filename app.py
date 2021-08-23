@@ -196,6 +196,7 @@ def webhook(type):
                         twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
                         tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
                         r.set("STREAM-TITLE", response["data"][0]["title"])
+                        print(r.get("STREAM-TITLE"))
                         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
                         send_tweet(tweet)
                         send_discord(response["data"][0], "twitch")
