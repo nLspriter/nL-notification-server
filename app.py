@@ -9,6 +9,9 @@ import redis
 import json
 import base64
 from oauth2client.service_account import ServiceAccountCredentials
+from random import choice
+from string import ascii_letters
+import cv2
 
 app = Flask(__name__)
 
@@ -25,47 +28,58 @@ credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
+def rnd(url):
+    return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
+
 def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
-        api.update_status(status=tweet)
-        print("Tweet sent")
+        if os.path.exists("thumbnail.jpg"):
+            api.update_with_media("thumbnail.jpg", status=tweet)
+            print("Tweet sent")
+        else:
+            api.update_status(status=tweet)
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(data, platform):
     api = tweepy.API(auth)
+    
+    embed = {
+                "username": os.environ.get("USERNAME"),
+                "avatar_url": api.me().profile_image_url
+            }
+
     if platform.lower() == "youtube":
-        content = "@everyone {}\n{}".format(data["title"], data["link"]["@href"])
-        embed = {
-                    "content": content,
-                    "username": "newLEGACYinc",
-                    "avatar_url": api.me().profile_image_url
-                }
+        url = data["link"]["@href"]
+        content = "@everyone {}\n{}".format(data["title"], url)
+
     elif platform.lower() == "twitch":
+        if os.path.exists("thumbnail.jpg"):
+            thumbnail = rnd(data["thumbnail_url"].format(width=400, height=225))
+        else:
+            thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
+
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        content = "@everyone {}\n<{}>".format(data["title"], url)
-        embed = {
-                    "content": content,
-                    "username": "newLEGACYinc",
-                    "avatar_url": api.me().profile_image_url,
-                    "embeds": [
-                        {
-                            "title": data["title"],
-                            "url": url,
-                            "color": 16711680,
-                            "author": {
-                                "name": "newLEGACYinc"
-                            },
-                            "image": {
-                                "url": data["thumbnail_url"].format(width=400, height=225)
-                            },
-                            "footer": {
-                                "text": "Category/Game: {}".format(data["game_name"])
+        content = "@everyone We're live! \n<{}>".format(url)
+        embed["embeds"] = [
+                            {
+                                "title": r.get("STREAM-TITLE"),
+                                "url": url,
+                                "color": 16711680,
+                                "author": {
+                                    "name": os.environ.get("USERNAME")
+                                },
+                                "image": {
+                                    "url": thumbnail
+                                },
+                                "footer": {
+                                    "text": "Category/Game: {}".format(data["game_name"])
+                                }
                             }
-                        }
-                    ]
-                }
+                        ]
+    
+    embed["content"] = content
     result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json = embed)
     try:
         result.raise_for_status()
@@ -82,36 +96,23 @@ def send_firebase(platform, data):
     }
 
     if platform.lower() == "youtube":
-        fcm_message = {
-                        "message": {
-                        "topic": platform,
-                        "data": {
-                            "url": data["link"]["@href"],
-                            "title": "YouTube",
-                            "body": data["title"]
-                        },
-                        "android": {
-                            "direct_boot_ok": True,
-                            "priority": "high"
-                        }
-                    }
-                }
+        url = data["link"]["@href"]
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        fcm_message = {
-                        "message": {
-                        "topic": platform,
-                        "data": {
-                            "url": url,
-                            "title": "Twitch",
-                            "body": data["title"]
-                        },
-                        "android": {
-                            "direct_boot_ok": True,
-                            "priority": "high"
-                        }
+    fcm_message = {
+                    "message": {
+                    "topic": platform,
+                    "data": {
+                        "url": url,
+                        "title": platform.capitalize(),
+                        "body": r.get("STREAM-TITLE")
+                    },
+                    "android": {
+                        "direct_boot_ok": True,
+                        "priority": "high"
                     }
                 }
+            }
 
     resp = requests.post(FCM_URL, data=json.dumps(fcm_message), headers=headers)
 
@@ -122,6 +123,30 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
     
+def thumbnail(url):
+    request = requests.get(url, stream=True)
+    if request.status_code == 200:
+        with open("thumbnail.jpg", 'wb') as image:
+            for chunk in request:
+                image.write(chunk)
+        
+        imagecheck = cv2.imread("thumbnail.jpg", 0)
+        if cv2.countNonZero(imagecheck) == 0:
+            print("Thumbnail is empty")
+            os.remove("thumbnail.jpg")
+    else:
+        print("Unable to download image")
+
+@app.route("/status", methods=["GET"])
+def status():
+    data = {
+        "stream_status": r.get("STREAM-TITLE"),
+        "video_id": r.get("LAST-VIDEO"),
+        "video_title": r.get("LAST-VIDEO-TITLE")
+    }
+    return make_response(data, 201)
+
+
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     if type == "twitch":
@@ -150,26 +175,40 @@ def webhook(type):
                 if "stream" in request.json["subscription"]["type"]:
                     r.set("STREAM-STATUS", request.json["subscription"]["type"])
 
-                if request.json["subscription"]["type"] == "stream.online":
+                if r.get("STREAM-STATUS") == "stream.online":
+                    try:
+                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                            r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                        else: 
+                            print("Stream already posted")
+                            return make_response("success", 201)
 
-                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                        r.sadd("STREAM-POSTED", request.json["event"]["id"])
-                    else: 
-                        print("Stream already posted")
-                        return make_response("success", 201)
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
-                    request_header =  {
-                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
-                    tweet = "{} [{}]\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch",response["data"][0])
-                return make_response("success", 201)
+                    except:
+                        pass
 
+                    finally:
+                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                        request_header =  {
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                        }
+                        response = requests.get(url, headers=request_header).json()
+                        twitch_url = "https://www.twitch.tv/{}/".format(response["data"][0]["user_login"])
+
+                        if request.json["subscription"]["type"] == "channel.update":
+                            r.set("STREAM-TITLE", request.json["event"]["title"])
+                            tweet = "{} [{}]\n\n{}".format(request.json["event"]["title"],request.json["event"]["category_name"], twitch_url)
+                        else:
+                            r.set("STREAM-TITLE", response["data"][0]["title"])
+                            tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"],response["data"][0]["game_name"], twitch_url)
+                        print(r.get("STREAM-TITLE"))
+                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
+                        send_tweet(tweet)
+                        send_discord(response["data"][0], "twitch")
+                        send_firebase("twitch",response["data"][0])
+                    
+                else:
+                    r.set("STREAM-TITLE", "Offline")
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
 
@@ -191,15 +230,30 @@ def webhook(type):
                 return make_response("success", 201)
         
             if "twitch.tv/newlegacyinc" not in video_title.lower():
-                tweet = ("{}\n{}".format(video_title, video_url))
+                tweet = ("{}\n\n{}".format(video_title, video_url))
+                thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
+                r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
 
-        except KeyError as e:
-            print("Property not found: {}".format(e))
-
-        return make_response("success", 201)
+        except KeyError:
+            print("Video deleted, retrieving last video from channel")
+            try:
+                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
+                xml_dict = xmltodict.parse(req.content)
+                video_info = xml_dict["feed"]["entry"][0]
+                video_id = video_info["yt:videoId"]
+                video_title = video_info["title"]
+                r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
+            except KeyError:
+                print("No videos found")
+                r.set("LAST-VIDEO", "None")
+    if os.path.exists("thumbnail.jpg"):
+        os.remove("thumbnail.jpg")
+    return make_response("success", 201)
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
