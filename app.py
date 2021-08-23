@@ -61,7 +61,7 @@ def send_discord(data, platform):
             thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 
         url = "https://www.twitch.tv/{}/".format(data["user_login"])
-        content = "@everyone {}\n<{}>".format(data["title"], url)
+        content = "@everyone We're live! \n<{}>".format(url)
         embed["embeds"] = [
                             {
                                 "title": r.get("STREAM-TITLE"),
