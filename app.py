@@ -12,6 +12,7 @@ from oauth2client.service_account import ServiceAccountCredentials
 from random import choice
 from string import ascii_letters
 import cv2
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -139,6 +140,15 @@ def thumbnail(url):
     else:
         print("Unable to download image")
 
+def comparedate(newdate, lastdate):
+    if lastdate == None:
+        r.set("LAST-VIDEO-DATE", newdate)
+        return True
+    if datetime.fromisoformat(newdate) > datetime.fromisoformat(lastdate):
+        return True
+    else:
+        return False
+
 @app.route("/status", methods=["GET"])
 def status():
     data = {
@@ -224,6 +234,7 @@ def webhook(type):
             video_title = video_info["title"]
             video_url = video_info["link"]["@href"]
             video_id = video_info["yt:videoId"]
+            video_published = video_info["published"]
 
             if video_id not in r.smembers("VIDEOS-POSTED"):
                 r.sadd("VIDEOS-POSTED", video_id)
@@ -231,7 +242,7 @@ def webhook(type):
                 print("Video already posted")
                 return make_response("success", 201)
         
-            if "twitch.tv/newlegacyinc" not in video_title.lower():
+            if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
                 tweet = ("{}\n\n{}".format(video_title, video_url))
                 thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
@@ -239,6 +250,7 @@ def webhook(type):
                 send_firebase("youtube", video_info)
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
+                r.set("LAST-VIDEO-DATE", video_published)
 
         except KeyError:
             print("Video deleted, retrieving last video from channel")
@@ -248,8 +260,10 @@ def webhook(type):
                 video_info = xml_dict["feed"]["entry"][0]
                 video_id = video_info["yt:videoId"]
                 video_title = video_info["title"]
+                video_published = video_info["published"]
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
+                r.set("LAST-VIDEO-DATE", video_published)
             except KeyError:
                 print("No videos found")
                 r.set("LAST-VIDEO", "None")
