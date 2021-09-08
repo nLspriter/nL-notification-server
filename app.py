@@ -107,13 +107,15 @@ def send_firebase(platform, data):
                     "topic": platform,
                     "notification": {
                         "title": platform.capitalize(),
-                        "body": title,
-                        "android_channel_id": "high_importance_channel"
+                        "body": title
                     },
                     "data": {
                         "url": url,
                     },
                     "android": {
+                        "notification": {
+                            "channel_id": "high_importance_channel"
+                        },
                         "direct_boot_ok": True,
                         "priority": "high"
                     }
