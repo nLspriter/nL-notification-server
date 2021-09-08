@@ -105,10 +105,13 @@ def send_firebase(platform, data):
     fcm_message = {
                     "message": {
                     "topic": platform,
+                    "notification": {
+                        "title": platform.capitalize(),
+                        "body": title,
+                        "android_channel_id": "high_importance_channel"
+                    },
                     "data": {
                         "url": url,
-                        "title": platform.capitalize(),
-                        "body": title
                     },
                     "android": {
                         "direct_boot_ok": True,
