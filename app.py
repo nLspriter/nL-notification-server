@@ -210,7 +210,7 @@ def webhook(type):
                         r.set("STREAM-TITLE", "{} [{}]".format(request.json["event"]["title"].rstrip(),request.json["event"]["category_name"]))
                         tweet = "{} [{}]\n\n{}".format(request.json["event"]["title"].rstrip(),request.json["event"]["category_name"], twitch_url)
                     else:
-                        r.set("STREAM-TITLE", "{} [{}]".format(request.json["data"]["title"].rstrip(),request.json["event"]["category_name"]))
+                        r.set("STREAM-TITLE", "{} [{}]".format(response.json["data"]["title"].rstrip(),request.json["event"]["category_name"]))
                         tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"].rstrip(),response["data"][0]["game_name"], twitch_url)
                     print(r.get("STREAM-TITLE"))
                     thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(response["data"][0]["user_login"]))
