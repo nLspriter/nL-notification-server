@@ -61,7 +61,7 @@ def send_discord(data, platform):
         else:
             thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 
-        url = "https://www.twitch.tv/{}/".format(data["user_login"])
+        url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
         content = "@everyone We're live! \n<{}>".format(url)
         embed["embeds"] = [
                             {
@@ -73,9 +73,6 @@ def send_discord(data, platform):
                                 },
                                 "image": {
                                     "url": thumbnail
-                                },
-                                "footer": {
-                                    "text": "Category/Game: {}".format(data["game_name"])
                                 }
                             }
                         ]
@@ -100,7 +97,7 @@ def send_firebase(platform, data):
         url = data["link"]["@href"]
         title = data["title"]
     elif platform.lower() == "twitch":
-        url = "https://www.twitch.tv/{}/".format(data["user_login"])
+        url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
         title = r.get("STREAM-TITLE")
     fcm_message = {
                     "message": {
@@ -198,13 +195,13 @@ def webhook(type):
                         else: 
                             print("Stream already posted")
                             return make_response("success", 201)
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(request.json["event"]["broadcaster_user_login"])
+                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(os.environ.get("USERNAME").lower())
                     request_header =  {
                     "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
                     "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
                     }
                     response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(request.json["event"]["broadcaster_user_login"])
+                    twitch_url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
 
                     if request.json["subscription"]["type"] == "channel.update":
                         r.set("STREAM-TITLE", "{} [{}]".format(request.json["event"]["title"].rstrip(), request.json["event"]["category_name"]))
@@ -213,7 +210,7 @@ def webhook(type):
                         r.set("STREAM-TITLE", "{} [{}]".format(response["data"][0]["title"].rstrip(), response["data"][0]["game_name"]))
                         tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"].rstrip(), response["data"][0]["game_name"], twitch_url)
                     print(r.get("STREAM-TITLE"))
-                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(request.json["event"]["broadcaster_user_login"]))
+                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch",response["data"][0])
