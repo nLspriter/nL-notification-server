@@ -211,8 +211,8 @@ def webhook(type):
                         stream_game = response["data"][0]["game_name"]
                     if (r.get("STREAM-GAME") != stream_game):
                         tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
-                        r.set("STREAM-TITLE", request.json["event"]["title"])
-                        r.set("STREAM-GAME", request.json["event"]["category_name"])
+                        r.set("STREAM-TITLE", stream_title)
+                        r.set("STREAM-GAME", stream_game)
                         print(r.get("STREAM-TITLE"))
                         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
                         send_tweet(tweet)
