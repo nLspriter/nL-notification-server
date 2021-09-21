@@ -154,7 +154,7 @@ def comparedate(newdate, lastdate):
 @app.route("/status", methods=["GET"])
 def status():
     data = {
-        "stream_status": r.get("STREAM-TITLE"),
+        "stream_status": "{} [{}]".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
         "video_id": r.get("LAST-VIDEO"),
         "video_title": r.get("LAST-VIDEO-TITLE")
     }
@@ -204,19 +204,24 @@ def webhook(type):
                     twitch_url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
 
                     if request.json["subscription"]["type"] == "channel.update":
-                        r.set("STREAM-TITLE", "{} [{}]".format(request.json["event"]["title"].rstrip(), request.json["event"]["category_name"]))
-                        tweet = "{} [{}]\n\n{}".format(request.json["event"]["title"].rstrip(), request.json["event"]["category_name"], twitch_url)
+                        stream_title = request.json["event"]["title"].rstrip()
+                        stream_game = request.json["event"]["category_name"]
                     else:
-                        r.set("STREAM-TITLE", "{} [{}]".format(response["data"][0]["title"].rstrip(), response["data"][0]["game_name"]))
-                        tweet = "{} [{}]\n\n{}".format(response["data"][0]["title"].rstrip(), response["data"][0]["game_name"], twitch_url)
-                    print(r.get("STREAM-TITLE"))
-                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch",response["data"][0])
+                        stream_title = response["data"][0]["title"].rstrip()
+                        stream_game = response["data"][0]["game_name"]
+                    if (r.get("STREAM-GAME") != stream_game):
+                        tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
+                        r.set("STREAM-TITLE", request.json["event"]["title"])
+                        r.set("STREAM-GAME", request.json["event"]["category_name"])
+                        print(r.get("STREAM-TITLE"))
+                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
+                        send_tweet(tweet)
+                        send_discord(response["data"][0], "twitch")
+                        send_firebase("twitch",response["data"][0])
                     
                 else:
                     r.set("STREAM-TITLE", "Offline")
+                    r.set("STREAM-GAME", "")
     elif type == "youtube":
         challenge = request.args.get("hub.challenge")
 
