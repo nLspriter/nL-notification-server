@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response
+from pyasn1.type.univ import Null
 import xmltodict
 import hmac
 import hashlib
@@ -153,7 +154,7 @@ def comparedate(newdate, lastdate):
 
 @app.route("/status", methods=["GET"])
 def status():
-    if (r.get("STREAM-GAME") == "None"):
+    if (r.get("STREAM-GAME") == Null):
         r.set("STREAM-GAME", "")
     data = {
         "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
