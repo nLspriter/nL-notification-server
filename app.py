@@ -74,6 +74,9 @@ def send_discord(data, platform):
                                 },
                                 "image": {
                                     "url": thumbnail
+                                },
+                                "footer": {
+                                    "text": "Category/Game: {}".format(r.get("STREAM-GAME"))
                                 }
                             }
                         ]
