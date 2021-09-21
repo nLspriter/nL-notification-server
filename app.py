@@ -154,7 +154,7 @@ def comparedate(newdate, lastdate):
 @app.route("/status", methods=["GET"])
 def status():
     data = {
-        "stream_status": "{} [{}]".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
+        "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
         "video_id": r.get("LAST-VIDEO"),
         "video_title": r.get("LAST-VIDEO-TITLE")
     }
@@ -212,7 +212,7 @@ def webhook(type):
                     if (r.get("STREAM-GAME") != stream_game):
                         tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
                         r.set("STREAM-TITLE", stream_title)
-                        r.set("STREAM-GAME", stream_game)
+                        r.set("STREAM-GAME", "[{}]".format(stream_game))
                         print(r.get("STREAM-TITLE"))
                         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
                         send_tweet(tweet)
