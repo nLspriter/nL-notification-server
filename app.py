@@ -153,6 +153,8 @@ def comparedate(newdate, lastdate):
 
 @app.route("/status", methods=["GET"])
 def status():
+    if (r.get("STREAM-GAME") == "None"):
+        r.set("STREAM-GAME", "")
     data = {
         "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
         "video_id": r.get("LAST-VIDEO"),
