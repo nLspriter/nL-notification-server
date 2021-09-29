@@ -44,6 +44,20 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
+def send_discord_error(error):
+    embed = {
+                "username": "Server Error",
+            }
+    content = "<@120242625809743876> {}".format(error)
+    embed["content"] = content
+    result = requests.post(os.environ.get("DISCORD-ERROR-URL"), json = embed)
+    try:
+        result.raise_for_status()
+    except requests.exceptions.HTTPError as err:
+        print(err)
+    else:
+        print("Discord Notification Sent, code {}.".format(result.status_code))
+
 def send_discord(data, platform):
     api = tweepy.API(auth)
     
@@ -166,115 +180,118 @@ def status():
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
-    if type == "twitch":
-        headers = request.headers
+    try:
+        if type == "twitch":
+            headers = request.headers
 
-        if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
-            challenge = request.json["challenge"]
+            if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
+                challenge = request.json["challenge"]
+
+                if challenge:
+                    return make_response(challenge, 201)
+
+            elif headers["Twitch-Eventsub-Message-Type"] == "notification":
+                message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + str(request.get_data(True, True, False))
+                key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
+                data = bytes(message, "utf-8")
+                signature = hmac.new(key, data, digestmod=hashlib.sha256)
+                expected_signature = "sha256=" + signature.hexdigest()
+
+                if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
+                    print("Signature Mismatch")
+                    return make_response("failed", 403)
+                else:
+                    print("Signature Match")
+                    print(request.json["subscription"]["type"])
+
+                    if "stream" in request.json["subscription"]["type"]:
+                        r.set("STREAM-STATUS", request.json["subscription"]["type"])
+
+                    if r.get("STREAM-STATUS") == "stream.online":
+                        if "id" in request.json["event"]:
+                            if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                                r.sadd("STREAM-POSTED", request.json["event"]["id"])
+                            else: 
+                                print("Stream already posted")
+                                return make_response("success", 201)
+                        url = "https://api.twitch.tv/helix/streams?user_login={}".format(os.environ.get("USERNAME").lower())
+                        request_header =  {
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                        }
+                        response = requests.get(url, headers=request_header).json()
+                        twitch_url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
+
+                        if request.json["subscription"]["type"] == "channel.update":
+                            stream_title = request.json["event"]["title"]
+                            stream_game = request.json["event"]["category_name"]
+                        else:
+                            stream_title = response["data"][0]["title"]
+                            stream_game = response["data"][0]["game_name"]
+                        if (r.get("STREAM-GAME") != stream_game):
+                            tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
+                            r.set("STREAM-TITLE", stream_title.rstrip())
+                            r.set("STREAM-GAME", "[{}]".format(stream_game))
+                            print(r.get("STREAM-TITLE"))
+                            thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
+                            send_tweet(tweet)
+                            send_discord(response["data"][0], "twitch")
+                            send_firebase("twitch",response["data"][0])
+                        
+                    else:
+                        r.set("STREAM-TITLE", "Offline")
+                        r.set("STREAM-GAME", "")
+        elif type == "youtube":
+            challenge = request.args.get("hub.challenge")
 
             if challenge:
                 return make_response(challenge, 201)
 
-        elif headers["Twitch-Eventsub-Message-Type"] == "notification":
-            message = headers["Twitch-Eventsub-Message-Id"] + headers["Twitch-Eventsub-Message-Timestamp"] + str(request.get_data(True, True, False))
-            key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
-            data = bytes(message, "utf-8")
-            signature = hmac.new(key, data, digestmod=hashlib.sha256)
-            expected_signature = "sha256=" + signature.hexdigest()
+            xml_dict = xmltodict.parse(request.data)
 
-            if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
-                print("Signature Mismatch")
-                return make_response("failed", 403)
-            else:
-                print("Signature Match")
-                print(request.json["subscription"]["type"])
-
-                if "stream" in request.json["subscription"]["type"]:
-                    r.set("STREAM-STATUS", request.json["subscription"]["type"])
-
-                if r.get("STREAM-STATUS") == "stream.online":
-                    if "id" in request.json["event"]:
-                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                            r.sadd("STREAM-POSTED", request.json["event"]["id"])
-                        else: 
-                            print("Stream already posted")
-                            return make_response("success", 201)
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(os.environ.get("USERNAME").lower())
-                    request_header =  {
-                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
-
-                    if request.json["subscription"]["type"] == "channel.update":
-                        stream_title = request.json["event"]["title"].rstrip()
-                        stream_game = request.json["event"]["category_name"]
-                    else:
-                        stream_title = response["data"][0]["title"].rstrip()
-                        stream_game = response["data"][0]["game_name"]
-                    if (r.get("STREAM-GAME") != stream_game):
-                        tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
-                        r.set("STREAM-TITLE", stream_title)
-                        r.set("STREAM-GAME", "[{}]".format(stream_game))
-                        print(r.get("STREAM-TITLE"))
-                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(os.environ.get("USERNAME").lower()))
-                        send_tweet(tweet)
-                        send_discord(response["data"][0], "twitch")
-                        send_firebase("twitch",response["data"][0])
-                    
-                else:
-                    r.set("STREAM-TITLE", "Offline")
-                    r.set("STREAM-GAME", "")
-    elif type == "youtube":
-        challenge = request.args.get("hub.challenge")
-
-        if challenge:
-            return make_response(challenge, 201)
-
-        xml_dict = xmltodict.parse(request.data)
-
-        try:
-            video_info = xml_dict["feed"]["entry"]
-            video_title = video_info["title"]
-            video_url = video_info["link"]["@href"]
-            video_id = video_info["yt:videoId"]
-            video_published = video_info["published"]
-
-            if video_id not in r.smembers("VIDEOS-POSTED"):
-                r.sadd("VIDEOS-POSTED", video_id)
-            else:
-                print("Video already posted")
-                return make_response("success", 201)
-        
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                tweet = ("{}\n\n{}".format(video_title, video_url))
-                thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                send_tweet(tweet)
-                send_discord(video_info, "youtube")
-                send_firebase("youtube", video_info)
-                r.set("LAST-VIDEO", video_id)
-                r.set("LAST-VIDEO-TITLE", video_title)
-                r.set("LAST-VIDEO-DATE", video_published)
-
-        except KeyError:
-            print("Video deleted, retrieving last video from channel")
             try:
-                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
-                xml_dict = xmltodict.parse(req.content)
-                video_info = xml_dict["feed"]["entry"][0]
-                video_id = video_info["yt:videoId"]
+                video_info = xml_dict["feed"]["entry"]
                 video_title = video_info["title"]
+                video_url = video_info["link"]["@href"]
+                video_id = video_info["yt:videoId"]
                 video_published = video_info["published"]
-                r.set("LAST-VIDEO", video_id)
-                r.set("LAST-VIDEO-TITLE", video_title)
-                r.set("LAST-VIDEO-DATE", video_published)
+
+                if video_id not in r.smembers("VIDEOS-POSTED"):
+                    r.sadd("VIDEOS-POSTED", video_id)
+                else:
+                    print("Video already posted")
+                    return make_response("success", 201)
+            
+                if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                    tweet = ("{}\n\n{}".format(video_title, video_url))
+                    thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
+                    send_tweet(tweet)
+                    send_discord(video_info, "youtube")
+                    send_firebase("youtube", video_info)
+                    r.set("LAST-VIDEO", video_id)
+                    r.set("LAST-VIDEO-TITLE", video_title)
+                    r.set("LAST-VIDEO-DATE", video_published)
+
             except KeyError:
-                print("No videos found")
-                r.set("LAST-VIDEO", "None")
-    if os.path.exists("thumbnail.jpg"):
-        os.remove("thumbnail.jpg")
-    return make_response("success", 201)
+                print("Video deleted, retrieving last video from channel")
+                try:
+                    req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
+                    xml_dict = xmltodict.parse(req.content)
+                    video_info = xml_dict["feed"]["entry"][0]
+                    video_id = video_info["yt:videoId"]
+                    video_title = video_info["title"]
+                    video_published = video_info["published"]
+                    r.set("LAST-VIDEO", video_id)
+                    r.set("LAST-VIDEO-TITLE", video_title)
+                    r.set("LAST-VIDEO-DATE", video_published)
+                except KeyError:
+                    print("No videos found")
+                    r.set("LAST-VIDEO", "None")
+        if os.path.exists("thumbnail.jpg"):
+            os.remove("thumbnail.jpg")
+        return make_response("success", 201)
+    except Exception as e:
+        send_discord_error(e)
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
