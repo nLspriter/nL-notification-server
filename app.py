@@ -116,7 +116,7 @@ def send_firebase(platform, data):
         title = data["title"]
     elif platform.lower() == "twitch":
         url = "https://www.twitch.tv/{}/".format(os.environ.get("USERNAME").lower())
-        title = r.get("STREAM-TITLE")
+        title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     fcm_message = {
                     "message": {
                     "topic": platform,
