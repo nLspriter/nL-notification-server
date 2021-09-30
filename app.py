@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, render_template
 from pyasn1.type.univ import Null
 import xmltodict
 import hmac
@@ -237,7 +237,6 @@ def webhook(type):
                             send_tweet(tweet)
                             send_discord(response["data"][0], "twitch")
                             send_firebase("twitch",response["data"][0])
-                        
                     else:
                         r.set("STREAM-TITLE", "Offline")
                         r.set("STREAM-GAME", "")
@@ -292,6 +291,10 @@ def webhook(type):
         return make_response("success", 201)
     except Exception as e:
         send_discord_error(e)
+
+@app.route("/")
+def home():
+    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
