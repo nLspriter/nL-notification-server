@@ -228,7 +228,7 @@ def webhook(type):
                         else:
                             stream_title = response["data"][0]["title"]
                             stream_game = response["data"][0]["game_name"]
-                        if (r.get("STREAM-GAME") != stream_game):
+                        if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
                             tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
                             r.set("STREAM-TITLE", stream_title.rstrip())
                             r.set("STREAM-GAME", "[{}]".format(stream_game))
