@@ -255,7 +255,7 @@ def webhook(type):
                 video_id = video_info["yt:videoId"]
                 video_published = video_info["published"]
 
-                if video_id not in r.smembers("VIDEOS-POSTED") and not comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                if video_id not in r.smembers("VIDEOS-POSTED") and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
                     r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video already posted")
