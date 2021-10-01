@@ -169,12 +169,12 @@ def comparedate(newdate, lastdate):
     else:
         return False
 
-@app.route("/status", methods=["GET"])
+@app.route("/videos", methods=["GET"])
 def status():
     data = r.get("VIDEOS-POSTED")
     return make_response(data, 201)
 
-@app.route("/videos", methods=["GET"])
+@app.route("/status", methods=["GET"])
 def videos():
     data = {
         "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
