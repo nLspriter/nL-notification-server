@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import Flask, request, make_response, render_template
 from pyasn1.type.univ import Null
 import xmltodict
 import hmac
@@ -171,6 +171,11 @@ def comparedate(newdate, lastdate):
 
 @app.route("/status", methods=["GET"])
 def status():
+    data = r.get("VIDEOS-POSTED")
+    return make_response(data, 201)
+
+@app.route("/videos", methods=["GET"])
+def videos():
     data = {
         "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
         "video_id": r.get("LAST-VIDEO"),
@@ -237,7 +242,6 @@ def webhook(type):
                             send_tweet(tweet)
                             send_discord(response["data"][0], "twitch")
                             send_firebase("twitch",response["data"][0])
-                        
                     else:
                         r.set("STREAM-TITLE", "Offline")
                         r.set("STREAM-GAME", "")
@@ -292,6 +296,10 @@ def webhook(type):
         return make_response("success", 201)
     except Exception as e:
         send_discord_error(e)
+
+@app.route("/", methods=['GET', 'POST'])
+def home():
+    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
