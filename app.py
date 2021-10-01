@@ -169,13 +169,6 @@ def comparedate(newdate, lastdate):
     else:
         return False
 
-@app.route("/videos", methods=["GET"])
-def videos():
-    data = r.smembers("VIDEOS-POSTED")
-    r.srem("VIDEOS-POSTED", "7fiFOvFwGJw")
-    print(data)
-    return make_response(data, 201)
-
 @app.route("/status", methods=["GET"])
 def status():
     data = {
@@ -262,13 +255,13 @@ def webhook(type):
                 video_id = video_info["yt:videoId"]
                 video_published = video_info["published"]
 
-                if video_id not in r.smembers("VIDEOS-POSTED"):
+                if video_id not in r.smembers("VIDEOS-POSTED") and not comparedate(video_published, r.get("LAST-VIDEO-DATE")):
                     r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video already posted")
                     return make_response("success", 201)
             
-                if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                if "twitch.tv/newlegacyinc" not in video_title.lower() :
                     tweet = ("{}\n\n{}".format(video_title, video_url))
                     thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                     send_tweet(tweet)
@@ -277,6 +270,7 @@ def webhook(type):
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)
                     r.set("LAST-VIDEO-DATE", video_published)
+                    return make_response("success", 201)
 
             except KeyError:
                 print("Video deleted, retrieving last video from channel")
