@@ -256,16 +256,12 @@ def webhook(type):
                 video_published = video_info["published"]
 
                 if video_id not in r.smembers("VIDEOS-POSTED"):
-                    if comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                        print("Video not published yet")
-                        return make_response("Video not published yet", 201)
-                    else:
-                        r.sadd("VIDEOS-POSTED", video_id)
+                    r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video already posted")
-                    return make_response("Video already posted", 201)
+                    return make_response("success", 201)
             
-                if "twitch.tv/newlegacyinc" not in video_title.lower() :
+                if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
                     tweet = ("{}\n\n{}".format(video_title, video_url))
                     thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                     send_tweet(tweet)
@@ -292,11 +288,11 @@ def webhook(type):
                     r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
-        return make_response("Video posted", 201)
+        return make_response("success", 201)
     except Exception as e:
         send_discord_error(e)
 
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/")
 def home():
     return render_template("home.html")
 
