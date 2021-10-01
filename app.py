@@ -257,10 +257,10 @@ def webhook(type):
 
                 if video_id not in r.smembers("VIDEOS-POSTED"):
                     if comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                        r.sadd("VIDEOS-POSTED", video_id)
+                    else:
                         print("Video not published yet")
                         return make_response("Video not published yet", 201)
-                    else:
-                        r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video already posted")
                     return make_response("Video already posted", 201)
