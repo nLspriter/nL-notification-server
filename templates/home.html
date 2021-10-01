@@ -1,19 +1,54 @@
 <!DOCTYPE html>
 <html>
+
+<head>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script type="text/javascript">
+    $(function () {
+      $("#reload-data").on("click", function (e) {
+        e.preventDefault()
+        $.getJSON("/data",
+          function (data) {
+            $("#twitch-data").html(data["stream_status"]);
+            $("#youtube-data").html(data["video_title"]);
+          });
+        return false;
+      });
+    });
+  </script>
+
+  <script type="text/javascript">
+    $(function () {
+      $('#post-twitch').on('click', function (e) {
+        $.getJSON('/post-twitch',
+          function (data) {
+          });
+        return false;
+      });
+    });</script>
+
+  <script type="text/javascript">
+    $(function () {
+      $('#post-youtube').on('click', function (e) {
+        $.getJSON('/post-youtube',
+          function (data) {
+          });
+        return false;
+      });
+    });</script>
+</head>
+
 <body>
-<h1>nL Server</h1>
-<div>
-    <div></div>
-    <div>
-        <input type="submit" name="reload-twitch" value="Reload Twitch"></input>
-        <input type="submit" name="post-twitch" value="Post Twitch"></input>
-    </div>
-</div>
-<div>
-    <div></div>
-    <div>
-        <input type="submit" name="reload-youtube" value="Reload YouTube"></input>
-        <input type="submit" name="post-youtube" value="Post YouTube"></input></div>
-</div>
+  <h1>nL Server</h1>
+  <div>
+    <div><b>Twitch</b></div>
+    <div id="twitch-data">{{stitle}}</div>
+    <div><b>Youtube</b></div>
+    <div id="youtube-data">{{ytitle}}</div>
+    <div><input type="button" id="reload-data" value="Reload Data" onclick="reload_data"></input></div>
+    <div><input type="button" id="post-twitch" value="Post Twitch" onclick="post_twitch"></input></div>
+    <div><input type="button" id="post-youtube" value="Post YouTube" onclick="post_youtube"></input></div>
+  </div>
 </body>
+
 </html>
