@@ -171,7 +171,7 @@ def comparedate(newdate, lastdate):
 
 @app.route("/videos", methods=["GET"])
 def status():
-    data = r.get("VIDEOS-POSTED")
+    data = r.smembers("VIDEOS-POSTED")
     return make_response(data, 201)
 
 @app.route("/status", methods=["GET"])
