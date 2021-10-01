@@ -171,6 +171,11 @@ def comparedate(newdate, lastdate):
 
 @app.route("/status", methods=["GET"])
 def status():
+    data = r.get("VIDEOS-POSTED")
+    return make_response(data, 201)
+
+@app.route("/videos", methods=["GET"])
+def videos():
     data = {
         "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
         "video_id": r.get("LAST-VIDEO"),
@@ -292,7 +297,7 @@ def webhook(type):
     except Exception as e:
         send_discord_error(e)
 
-@app.route("/")
+@app.route("/", methods=['GET', 'POST'])
 def home():
     return render_template("home.html")
 
