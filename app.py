@@ -255,11 +255,15 @@ def webhook(type):
                 video_id = video_info["yt:videoId"]
                 video_published = video_info["published"]
 
-                if video_id not in r.smembers("VIDEOS-POSTED") and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                    r.sadd("VIDEOS-POSTED", video_id)
+                if video_id not in r.smembers("VIDEOS-POSTED"):
+                    if comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                        print("Video not published yet")
+                        return make_response("Video not published yet", 201)
+                    else:
+                        r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video already posted")
-                    return make_response("success", 201)
+                    return make_response("Video already posted", 201)
             
                 if "twitch.tv/newlegacyinc" not in video_title.lower() :
                     tweet = ("{}\n\n{}".format(video_title, video_url))
@@ -270,7 +274,6 @@ def webhook(type):
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)
                     r.set("LAST-VIDEO-DATE", video_published)
-                    return make_response("success", 201)
 
             except KeyError:
                 print("Video deleted, retrieving last video from channel")
@@ -289,7 +292,7 @@ def webhook(type):
                     r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
-        return make_response("success", 201)
+        return make_response("Video posted", 201)
     except Exception as e:
         send_discord_error(e)
 
