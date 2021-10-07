@@ -2,6 +2,8 @@
 <html>
 
 <head>
+  <title>nL App Control Panel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
   <script type="text/javascript">
     $(function () {
@@ -39,16 +41,19 @@
 </head>
 
 <body>
-  <h1>nL Server</h1>
-  <div>
-    <div><b>Twitch</b></div>
-    <div id="twitch-data">{{stitle}}</div>
-    <div><b>Youtube</b></div>
-    <div id="youtube-data">{{ytitle}}</div>
-    <div><input type="button" id="reload-data" value="Reload Data" onclick="reload_data"></input></div>
-    <div><input type="button" id="post-twitch" value="Post Twitch" onclick="post_twitch"></input></div>
-    <div><input type="button" id="post-youtube" value="Post YouTube" onclick="post_youtube"></input></div>
+  <div class="container">
+    <div class="Sidebar"></div>
+    <div class="Main">
+      <div class="Header"><h1>nL Server</h1></div>
+      <div class="Main-Area">
+        <div><b>Twitch</b></div>
+        <div id="twitch-data">{{stitle}}</div>
+        <div><b>Youtube</b></div>
+        <div id="youtube-data">{{ytitle}}</div>
+        <div><input type="button" id="reload-data" value="Reload Data" onclick="reload_data"></input></div>
+        <div><input type="button" id="post-twitch" value="Post Twitch" onclick="post_twitch"></input></div>
+        <div><input type="button" id="post-youtube" value="Post YouTube" onclick="post_youtube"></input></div></div>
+    </div>
   </div>
 </body>
-
 </html>
