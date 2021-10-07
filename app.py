@@ -408,7 +408,7 @@ def post_youtube():
     return make_response("success", 201)
 
 @app.route("/notifications")
-def home():
+def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
@@ -417,7 +417,7 @@ def chatcommentary():
     return render_template("chatcommentary.html")
 
 @app.route("/")
-def chatcommentary():
+def home():
     return render_template("home.html")
 
 if __name__ == "__main__":
