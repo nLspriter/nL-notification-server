@@ -1,5 +1,4 @@
 from flask import Flask, request, make_response, render_template
-from pyasn1.type.univ import Null
 import xmltodict
 import hmac
 import hashlib
@@ -408,11 +407,18 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
-@app.route("/")
+@app.route("/notifications")
 def home():
     data = load_data()
-    return render_template("home.html", stitle=data["stream_status"], ytitle=data["video_title"])
+    return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
+@app.route("/chatcommentary")
+def chatcommentary():
+    return render_template("chatcommentary.html")
+
+@app.route("/")
+def chatcommentary():
+    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
