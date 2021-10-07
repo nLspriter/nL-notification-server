@@ -2,7 +2,7 @@
 <html>
 
 <head>
-  <title>nL Notification Control Panel</title>
+  <title>nL Control Panel</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 </head>
@@ -11,14 +11,14 @@
   <div class="container">
     <div class="Sidebar">
       <ul class="nav-list">
-        <li>Home</li>
-        <li>Notifications</li>
-        <li>Chat Commentary</li>
+        <li href="{{ url_for('home') }}">Home</li>
+        <li href="{{ url_for('notifications') }}">Notifications</li>
+        <li href="{{ url_for('chatcommentary') }}">Chat Commentary</li>
       </ul>
     </div>
     <div class="Main">
       <div class="Header">
-        <h1>nL Chat Commentary Control Panel</h1>
+        <h1>nL Control Panel</h1>
       </div>
       <div class="Main-Area">
       </div>
