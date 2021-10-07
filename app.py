@@ -368,8 +368,8 @@ def post_twitch():
     }
     response = requests.get(twitch_url, headers=request_header).json()
     try:
-        stream_title = response["data"][0]["title"]
-        stream_game = "[{}]".format(response["data"][0]["game_name"])
+        stream_title = response["data"][0]["title"].rstrip()
+        stream_game = "{}".format(response["data"][0]["game_name"])
         twitch_url = "https://www.twitch.tv/{}/".format(
             os.environ.get("USERNAME").lower())
         tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
