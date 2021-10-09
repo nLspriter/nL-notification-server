@@ -429,7 +429,7 @@ def home():
 @app.route("/comms", methods=["GET", "POST"])
 def returnAudioFile():
     return send_file(
-       choice(os.listdir("\\static\\jim ross")), 
+       choice(os.listdir("./static/jim ross")), 
        mimetype="audio/wav", 
        as_attachment=True, 
        attachment_filename="test.wav")
