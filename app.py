@@ -383,6 +383,7 @@ def post_twitch():
         send_discord_error(e)
     return make_response("success", 201)
 
+
 @app.route("/post-youtube")
 def post_youtube():
     req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(
@@ -407,18 +408,27 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
+
 @app.route("/notifications")
 def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
+
 @app.route("/chatcommentary")
 def chatcommentary():
     return render_template("chatcommentary.html")
 
+
 @app.route("/")
 def home():
     return render_template("home.html")
+
+
+@app.route("comms", methods=["GET", "POST"])
+def returnAudioFile():
+    return "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav"
+
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
