@@ -1,4 +1,5 @@
 from flask import Flask, request, make_response, render_template
+from flask.helpers import send_file
 import xmltodict
 import hmac
 import hashlib
@@ -427,7 +428,11 @@ def home():
 
 @app.route("/comms", methods=["GET", "POST"])
 def returnAudioFile():
-    return "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav"
+    return send_file(
+       choice(os.listdir("\\static\\jim ross")), 
+       mimetype="audio/wav", 
+       as_attachment=True, 
+       attachment_filename="test.wav")
 
 
 if __name__ == "__main__":
