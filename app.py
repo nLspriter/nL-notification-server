@@ -425,7 +425,7 @@ def home():
     return render_template("home.html")
 
 
-@app.route("comms", methods=["GET", "POST"])
+@app.route("/comms", methods=["GET", "POST"])
 def returnAudioFile():
     return "https://www2.cs.uic.edu/~i101/SoundFiles/BabyElephantWalk60.wav"
 
