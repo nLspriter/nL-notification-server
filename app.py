@@ -415,25 +415,9 @@ def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
-
-@app.route("/chatcommentary")
-def chatcommentary():
-    return render_template("chatcommentary.html")
-
-
 @app.route("/")
 def home():
     return render_template("home.html")
-
-
-@app.route("/comms", methods=["GET", "POST"])
-def returnAudioFile():
-    return send_file(
-       "./static/jim ross/"+choice(os.listdir("./static/jim ross")), 
-       mimetype="audio/wav", 
-       as_attachment=True, 
-       attachment_filename="test.wav")
-
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
