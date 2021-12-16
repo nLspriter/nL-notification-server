@@ -352,6 +352,7 @@ def load_data():
         video_id = video_info["yt:videoId"]
     except:
         video_title = "No videos found"
+        video_id = ""
     data = {
         "stream_status": "{} {}".format(stream_title, stream_game),
         "video_title": video_title,
