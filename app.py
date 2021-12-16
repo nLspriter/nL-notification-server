@@ -417,7 +417,7 @@ def notifications():
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
 @app.route("/thumbnail")
-def notifications():
+def thumbnail():
     data = load_data()
     return render_template("thumbnail.html")
 
