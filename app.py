@@ -349,12 +349,13 @@ def load_data():
         xml_dict = xmltodict.parse(youtube_response.content)
         video_info = xml_dict["feed"]["entry"][0]
         video_title = video_info["title"]
+        video_id = video_info["yt:videoId"]
     except:
         video_title = "No videos found"
     data = {
         "stream_status": "{} {}".format(stream_title, stream_game),
         "video_title": video_title,
-        "video_id": video_info["yt:videoId"]
+        "video_id": video_id
     }
     return data
 
