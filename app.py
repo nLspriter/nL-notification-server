@@ -415,6 +415,11 @@ def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
+@app.route("/thumbnail")
+def notifications():
+    data = load_data()
+    return render_template("thumbnail.html", stitle=data["video_id"], ytitle=data["video_title"])
+
 @app.route("/")
 def home():
     return render_template("home.html")
