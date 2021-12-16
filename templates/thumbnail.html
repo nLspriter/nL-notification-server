@@ -20,7 +20,7 @@
         e.preventDefault()
         $.getJSON("/data",
           function (data) {
-            $("#youtube-thumbnail").attr("src", 'https://img.youtube.com/vi/' + data["video_id"] + '/maxresdefault.jpg');
+            $("#youtubethumbnail").attr("src", 'https://img.youtube.com/vi/' + data["video_id"] + '/maxresdefault.jpg');
             $("#youtube-data").html(data["video_title"]);
           });
         return false;
@@ -30,7 +30,7 @@
 </head>
 
 <body>
-    <div id="test"><img id="youtube_thumb"><div id="youtube-data"></div></div>
+    <div id="test"><img id="youtube-thumbnail"><div id="youtube-data"></div></div>
     <input type="button" id="load-data" value="Click Me" onclick="myFunction()" />
     <script>
         function myFunction() {
