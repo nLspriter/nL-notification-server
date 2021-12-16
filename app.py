@@ -418,7 +418,7 @@ def notifications():
 @app.route("/thumbnail")
 def notifications():
     data = load_data()
-    return render_template("thumbnail.html", stitle=data["video_id"], ytitle=data["video_title"])
+    return render_template("thumbnail.html")
 
 @app.route("/")
 def home():
