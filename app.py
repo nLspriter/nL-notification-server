@@ -353,7 +353,8 @@ def load_data():
         video_title = "No videos found"
     data = {
         "stream_status": "{} {}".format(stream_title, stream_game),
-        "video_title": video_title
+        "video_title": video_title,
+        "video_id": video_info["yt:videoId"]
     }
     return data
 
