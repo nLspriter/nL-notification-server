@@ -40,7 +40,7 @@
         </div>
         <div class="Main">
             <div class="Header">
-                <h1>nL Notification Control Panel</h1>
+                <h1>nL Thumbnail Control Panel</h1>
             </div>
             <div class="Main-Area">
                 <div id="test"><img id="youtube-thumbnail">
@@ -49,16 +49,6 @@
                 <input type="button" id="load-data" value="Click Me" onclick="myFunction()" />
                 <script>
                     function myFunction() {
-                        var divPosition = $("#test").offset();
-                        if (divPosition.left < 0) {
-                            $("#test").animate({
-                                "left": 0
-                            }, 1000);
-                        } else {
-                            $("#test").animate({
-                                "left": -1280
-                            }, 1000);
-                        };
                     }
                 </script>
             </div>
