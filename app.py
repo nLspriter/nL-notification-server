@@ -414,23 +414,34 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
-@app.route("/trigger")
+
+@app.route("/trigger", methods=["POST"])
 def trigger():
     sse.publish({"message": datetime.datetime.now()}, type='publish')
+
 
 @app.route("/notifications")
 def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
 
+
 @app.route("/thumbnail")
 def thumbnail():
     data = load_data()
     return render_template("thumbnail.html")
 
+
+@app.route("/overlay")
+def overlay():
+    data = load_data()
+    return render_template("overlay.html")
+
+
 @app.route("/")
 def home():
     return render_template("home.html")
+
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)
