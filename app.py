@@ -1,5 +1,6 @@
 from flask import Flask, request, make_response, render_template
 from flask.helpers import send_file
+from flask_sse import sse
 import xmltodict
 import hmac
 import hashlib
@@ -16,6 +17,7 @@ import cv2
 from datetime import datetime
 
 app = Flask(__name__)
+app.config["REDIS_URL"] = os.environ.get("REDIS_URL")
 
 auth = tweepy.OAuthHandler(os.environ.get(
     "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
@@ -412,6 +414,9 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
+@app.route("/trigger")
+def trigger():
+    sse.publish({"message": datetime.datetime.now()}, type='publish')
 
 @app.route("/notifications")
 def notifications():

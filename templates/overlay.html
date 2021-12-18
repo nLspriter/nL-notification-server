@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>nL Control Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        #test {
+            background-color: white;
+            font-size: 30px;
+            position: absolute;
+            left: -100%;
+            top: 10%;
+        }
+    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#load-data").on("click", function (e) {
+                e.preventDefault()
+                $.getJSON("/data",
+                    function (data) {
+                        $("#youtube-thumbnail").attr("src", 'https://img.youtube.com/vi/' + data["video_id"] + '/maxresdefault.jpg');
+                        $("#youtube-data").html(data["video_title"]);
+                    });
+                return false;
+            });
+        });
+    </script>
+    <script type="text/javascript">
+        var source = new EventSource("{{ url_for('trigger') }}");
+        source.addEventListener('publish', function (event) {
+            var divPosition = $("#test").offset();
+            if (divPosition.left < 0) {
+                $("#test").animate({
+                    "left": 0
+                }, 1000);
+            } else {
+                $("#test").animate({
+                    "left": -1280
+                }, 1000);
+            };
+        }, false);
+    </script>
+</head>
+
+<body>
+    <div class="container">
+        <div class="Sidebar">
+            <ul class="nav-list">
+                <li><a href="{{ url_for('home') }}">Home</a></li>
+                <li><a href="{{ url_for('notifications') }}">Notifications</a></li>
+                <li><a href="{{ url_for('thumbnail') }}">Thumbnail Overlay</a></li>
+            </ul>
+        </div>
+        <div class="Main">
+            <div class="Header">
+                <h1>nL Notification Control Panel</h1>
+            </div>
+            <div class="Main-Area">
+                <div id="test"><img id="youtube-thumbnail">
+                    <div id="youtube-data"></div>
+                </div>
+                <input type="button" id="load-data" value="Click Me" onclick="myFunction()" />
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
