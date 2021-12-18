@@ -417,7 +417,7 @@ def post_youtube():
 
 @app.route("/trigger", methods=["POST"])
 def trigger():
-    sse.publish(type='publish')
+    sse.publish({"message": "true"}, type='publish')
 
 
 @app.route("/notifications")
