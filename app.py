@@ -421,13 +421,11 @@ def notifications():
 
 @app.route("/thumbnail")
 def thumbnail():
-    data = load_data()
     return render_template("thumbnail.html")
 
 
 @app.route("/overlay")
 def overlay():
-    data = load_data()
     return render_template("overlay.html")
 
 
