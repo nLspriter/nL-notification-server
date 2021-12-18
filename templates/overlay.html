@@ -28,7 +28,7 @@
         });
     </script>
     <script type="text/javascript">
-        var source = new EventSource("{{ url_for('trigger') }}");
+        var source = new EventSource("/trigger");
         source.addEventListener('publish', function (event) {
             var divPosition = $("#test").offset();
             if (divPosition.left < 0) {
