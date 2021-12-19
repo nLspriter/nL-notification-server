@@ -415,7 +415,7 @@ def post_youtube():
 
 @app.route("/trigger", methods=["POST"])
 def trigger():
-    return make_response("event: publish\ndata: test", 201)
+    return make_response(load_data(), 201)
 
 @app.route("/notifications")
 def notifications():
