@@ -413,7 +413,7 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
-@app.route("/trigger")
+@app.route("/trigger", methods=["POST"])
 def trigger():
     return make_response("event: publish\ndata: test", 201)
 
