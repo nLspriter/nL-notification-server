@@ -17,6 +17,7 @@ import cv2
 from datetime import datetime
 
 app = Flask(__name__)
+app.config["REDIS_URL"] = os.environ.get("REDIS_URL")
 
 auth = tweepy.OAuthHandler(os.environ.get(
     "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
@@ -415,7 +416,8 @@ def post_youtube():
 
 @app.route("/trigger", methods=["POST"])
 def trigger():
-    return make_response(load_data(), 201)
+    sse.publish(load_data(), type="trigger")
+    return make_response("trigger sent", 201)
 
 @app.route("/notifications")
 def notifications():
