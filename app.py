@@ -1,5 +1,6 @@
 from flask import Flask, request, make_response, render_template
 from flask.helpers import send_file
+from flask_sse import sse
 import xmltodict
 import hmac
 import hashlib
@@ -412,6 +413,9 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
+@app.route("/trigger")
+def trigger():
+    return make_response("event: publish\ndata: test", 201)
 
 @app.route("/notifications")
 def notifications():

@@ -28,15 +28,16 @@
         });
     </script>
     <script type="text/javascript">
+        var target = document.getElementById("test");
         var source = new EventSource("/trigger");
-        source.addEventListener('publish', function (event) {
-            var divPosition = $("#test").offset();
+        source.addEventListener('publish', function (e) {
+            var divPosition = target.offset();
             if (divPosition.left < 0) {
-                $("#test").animate({
+                target.animate({
                     "left": 0
                 }, 1000);
             } else {
-                $("#test").animate({
+                target.animate({
                     "left": -1280
                 }, 1000);
             };
