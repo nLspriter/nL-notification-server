@@ -414,7 +414,7 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
-@app.route("/trigger/<trig_type>", methods=["POST"])
+@app.route("/trigger", methods=["POST"])
 def trigger(trig_type):
     sse.publish(load_data(), type=trig_type)
     return make_response("trigger sent", 201)
