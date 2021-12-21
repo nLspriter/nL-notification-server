@@ -38,12 +38,14 @@
         var target = document.getElementById("test");
         var source = new EventSource("/trigger");
         source.addEventListener('show', function (e) {
+            console.log(e.data);
             target.animate({
                 "left": 0
             }, 1000);
 
         }, false);
         source.addEventListener('trigger', function (e) {
+            console.log(e.data);
             target.animate({
                 "left": -1280
             }, 1000);
