@@ -37,18 +37,17 @@
     <script>
         var target = document.getElementById("test");
         var source = new EventSource("/trigger");
-        source.addEventListener('publish', function (e) {
-            var divPosition = target.offset();
-            if (divPosition.left < 0) {
-                target.animate({
-                    "left": 0
-                }, 1000);
-            } else {
-                target.animate({
-                    "left": -1280
-                }, 1000);
-            };
+        source.addEventListener('show', function (e) {
+            target.animate({
+                "left": 0
+            }, 1000);
+
         }, false);
+        source.addEventListener('hide', function (e) {
+            target.animate({
+                "left": -1280
+            }, 1000);
+        }, false)
     </script>
 </body>
 
