@@ -27,7 +27,14 @@
             });
         });
     </script>
-    <script type="text/javascript">
+</head>
+
+<body>
+    <div id="test"><img id="youtube-thumbnail">
+        <div id="youtube-data"></div>
+    </div>
+    <input type="button" id="load-data" value="Click Me" />
+    <script>
         var target = document.getElementById("test");
         var source = new EventSource("/trigger");
         source.addEventListener('publish', function (e) {
@@ -43,13 +50,6 @@
             };
         }, false);
     </script>
-</head>
-
-<body>
-    <div id="test"><img id="youtube-thumbnail">
-        <div id="youtube-data"></div>
-    </div>
-    <input type="button" id="load-data" value="Click Me" />
 </body>
 
 </html>
