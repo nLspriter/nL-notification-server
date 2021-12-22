@@ -37,20 +37,19 @@
     <script>
         var target = document.getElementById("test");
         var source = new EventSource("/trigger");
-        source.addEventListener('show', function (e) {
-            console.log(e.data);
-            target.animate({
-                "left": 0
-            }, 1000);
-
-        }, false);
         source.addEventListener('trigger', function (e) {
-            console.log(e.data);
-            target.animate({
-                "left": -1280
-            }, 1000);
-        }, false)
-        source.onmessage
+            console.log(e.data)
+            var divPosition = target.offset();
+            if (divPosition.left < 0) {
+                target.animate({
+                    "left": 0
+                }, 1000);
+            } else {
+                target.animate({
+                    "left": -1280
+                }, 1000);
+            };
+        }, true);
     </script>
 </body>
 

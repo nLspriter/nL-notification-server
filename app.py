@@ -1,6 +1,5 @@
-from flask import Flask, request, make_response, render_template
+from flask import Flask, request, Response, make_response, render_template
 from flask.helpers import send_file
-from flask_sse import sse
 import xmltodict
 import hmac
 import hashlib
@@ -416,8 +415,11 @@ def post_youtube():
 
 @app.route("/trigger")
 def trigger():
-    sse.publish(load_data(), type="trigger")
-    return make_response("trigger sent", 201)
+    def respond():
+        while True:
+            print("test")
+            yield "data: {}\nevent: trigger\n\n"
+    return Response(respond(), mimetype='text/event-stream')
 
 @app.route("/notifications")
 def notifications():
