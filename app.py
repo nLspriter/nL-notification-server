@@ -413,12 +413,14 @@ def post_youtube():
         send_discord_error(e)
     return make_response("success", 201)
 
-@app.route("/trigger")
+@app.route("/trigger", methods=["GET", "POST"])
 def trigger():
     def respond():
-        if request.method == 'POST':
+        if request.method == "POST":
             print("test")
             yield "data: {}\nevent: trigger\n\n"
+        else:
+            yield "data: {}\nevent: null\n\n"
     return Response(respond(), mimetype='text/event-stream')
 
 @app.route("/notifications")
