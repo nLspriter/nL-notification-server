@@ -38,13 +38,13 @@
         var source = new EventSource("/trigger");
         source.addEventListener('trigger', function (e) {
             console.log(e.data)
-            var divPosition = document.getElementById("test").offset();
+            var divPosition = $("test").offset();
             if (divPosition.left < 0) {
-                document.getElementById("test").animate({
+                $("test").animate({
                     "left": 0
                 }, 1000);
             } else {
-                document.getElementById("test").animate({
+                $("test").animate({
                     "left": -1280
                 }, 1000);
             };
