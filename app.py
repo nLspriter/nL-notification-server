@@ -416,7 +416,7 @@ def post_youtube():
 @app.route("/trigger")
 def trigger():
     def respond():
-        while True:
+        if request.method == 'POST':
             print("test")
             yield "data: {}\nevent: trigger\n\n"
     return Response(respond(), mimetype='text/event-stream')
