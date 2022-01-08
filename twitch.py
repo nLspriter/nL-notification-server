@@ -4,7 +4,7 @@ from app import *
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
-    
+
 def send_tweet(tweet):
     api = tweepy.API(app.auth)
     try:
@@ -104,7 +104,7 @@ def webhook():
         headers = request.headers
 
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
-        challenge = request.json["challenge"]
+            challenge = request.json["challenge"]
 
         if challenge:
             return make_response(challenge, 201)
