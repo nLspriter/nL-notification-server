@@ -1,6 +1,6 @@
 from flask import Flask, request, make_response
 import os
-from app import *
+from app import send_discord_error, tweepy, auth, choice, ascii_letters, requests, credentials, r, FCM_URL, json, hmac, hashlib, thumbnail
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
@@ -169,4 +169,4 @@ def webhook(request):
                     r.set("STREAM-GAME", "")
             return make_response("success", 201)
     except Exception as e:
-        app.send_discord_error(e)
+        send_discord_error(e)
