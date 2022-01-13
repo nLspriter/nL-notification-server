@@ -171,4 +171,4 @@ def webhook(request):
             
             return make_response("success", 201)
     except Exception as e:
-        send_discord_error(e)
+        app.send_discord_error(e)
