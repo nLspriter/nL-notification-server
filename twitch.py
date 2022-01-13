@@ -99,7 +99,7 @@ def send_firebase(platform, data):
         print("Unable to send message to Firebase")
         print(resp.text)
 
-def webhook():
+def webhook(request):
     try:
         headers = request.headers
 

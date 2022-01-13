@@ -72,7 +72,7 @@ def send_firebase(platform, data):
         print(resp.text)
 
 
-def webhook():
+def webhook(request):
     try:        
         challenge = request.args.get("hub.challenge")
 

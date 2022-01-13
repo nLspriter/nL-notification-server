@@ -76,9 +76,9 @@ def status():
 def webhook(type):
     try:
         if type == "twitch":
-            twitch.webhook()
+            twitch.webhook(request)
         elif type == "youtube":
-            youtube.webhook()
+            youtube.webhook(request)
     except Exception as e:
         send_discord_error(e)
 
@@ -130,9 +130,9 @@ def post_twitch():
         r.set("STREAM-GAME", "[{}]".format(stream_game))
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
             os.environ.get("USERNAME").lower()))
-        send_tweet(tweet)
-        send_discord(response["data"][0], "twitch")
-        send_firebase("twitch", response["data"][0])
+        # send_tweet(tweet)
+        # send_discord(response["data"][0], "twitch")
+        # send_firebase("twitch", response["data"][0])
     except Exception as e:
         send_discord_error(e)
     return make_response("success", 201)
@@ -151,9 +151,9 @@ def post_youtube():
         tweet = ("{}\n\n{}".format(video_title, video_url))
         thumbnail(
             "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-        send_tweet(tweet)
-        send_discord(video_info, "youtube")
-        send_firebase("youtube", video_info)
+        # send_tweet(tweet)
+        # send_discord(video_info, "youtube")
+        # send_firebase("youtube", video_info)
         r.set("LAST-VIDEO", video_id)
         r.set("LAST-VIDEO-TITLE", video_title)
         r.set("LAST-VIDEO-DATE", video_published)
