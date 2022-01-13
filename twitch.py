@@ -6,7 +6,7 @@ def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
 
 def send_tweet(tweet):
-    api = tweepy.API(app.auth)
+    api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
             api.update_with_media("thumbnail.jpg", status=tweet)
@@ -17,7 +17,7 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(data, platform):
-    api = tweepy.API(app.auth)
+    api = tweepy.API(auth)
 
     embed = {
         "username": os.environ.get("USERNAME"),
@@ -35,7 +35,7 @@ def send_discord(data, platform):
     content = "@everyone We're live! \n<{}>".format(url)
     embed["embeds"] = [
         {
-            "title": app.r.get("STREAM-TITLE"),
+            "title": r.get("STREAM-TITLE"),
             "url": url,
             "color": 16711680,
             "author": {
@@ -45,7 +45,7 @@ def send_discord(data, platform):
                 "url": thumbnail
             },
             "footer": {
-                "text": "Category/Game: {}".format(app.r.get("STREAM-GAME"))
+                "text": "Category/Game: {}".format(r.get("STREAM-GAME"))
             }
         }
     ]
@@ -60,7 +60,7 @@ def send_discord(data, platform):
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
 def send_firebase(platform, data):
-    access_token_info = app.credentials.get_access_token()
+    access_token_info = credentials.get_access_token()
     headers = {
         "Authorization": "Bearer " + access_token_info.access_token,
         "Content-Type": "application/json; UTF-8",
@@ -68,7 +68,7 @@ def send_firebase(platform, data):
 
     url = "https://www.twitch.tv/{}/".format(
         os.environ.get("USERNAME").lower())
-    title = "{} {}".format(app.r.get("STREAM-TITLE"), app.r.get("STREAM-GAME"))
+    title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     fcm_message = {
         "message": {
             "topic": platform,
@@ -126,13 +126,13 @@ def webhook(request):
             print(request.json["subscription"]["type"])
 
             if "stream" in request.json["subscription"]["type"]:
-                app.r.set("STREAM-STATUS",
+                r.set("STREAM-STATUS",
                         request.json["subscription"]["type"])
 
-            if app.r.get("STREAM-STATUS") == "stream.online":
+            if r.get("STREAM-STATUS") == "stream.online":
                 if "id" in request.json["event"]:
-                    if request.json["event"]["id"] not in app.r.smembers("STREAM-POSTED"):
-                        app.r.sadd("STREAM-POSTED",
+                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                        r.sadd("STREAM-POSTED",
                                 request.json["event"]["id"])
                     else:
                         print("Stream already posted")
@@ -154,21 +154,21 @@ def webhook(request):
                 else:
                     stream_title = response["data"][0]["title"]
                     stream_game = response["data"][0]["game_name"]
-                if (app.r.get("STREAM-GAME") != "[{}]".format(stream_game)):
+                if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
                     tweet = "{} [{}]\n\n{}".format(
                         stream_title, stream_game, twitch_url)
-                    app.r.set("STREAM-TITLE", stream_title.rstrip())
-                    app.r.set("STREAM-GAME", "[{}]".format(stream_game))
-                    print(app.r.get("STREAM-TITLE"))
-                    app.thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
+                    r.set("STREAM-TITLE", stream_title.rstrip())
+                    r.set("STREAM-GAME", "[{}]".format(stream_game))
+                    print(r.get("STREAM-TITLE"))
+                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                         os.environ.get("USERNAME").lower()))
                     send_tweet(tweet)
                     send_discord(response["data"][0], "twitch")
                     send_firebase("twitch", response["data"][0])
             else:
-                app.r.set("STREAM-TITLE", "Offline")
-                app.r.set("STREAM-GAME", "")
+                r.set("STREAM-TITLE", "Offline")
+                r.set("STREAM-GAME", "")
             
             return make_response("success", 201)
     except Exception as e:
-        app.send_discord_error(e)
+        send_discord_error(e)
