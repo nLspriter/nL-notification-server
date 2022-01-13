@@ -16,7 +16,7 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(data, platform):
+def send_discord(data):
     api = tweepy.API(auth)
 
     embed = {
@@ -105,9 +105,8 @@ def webhook(request):
 
         if headers["Twitch-Eventsub-Message-Type"] == "webhook_callback_verification":
             challenge = request.json["challenge"]
-
-        if challenge:
-            return make_response(challenge, 201)
+            if challenge:
+                return make_response(challenge, 201)
 
         elif headers["Twitch-Eventsub-Message-Type"] == "notification":
             message = headers["Twitch-Eventsub-Message-Id"] + \
@@ -118,57 +117,56 @@ def webhook(request):
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
 
-        if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
-            print("Signature Mismatch")
-            return make_response("failed", 403)
-        else:
-            print("Signature Match")
-            print(request.json["subscription"]["type"])
-
-            if "stream" in request.json["subscription"]["type"]:
-                r.set("STREAM-STATUS",
-                        request.json["subscription"]["type"])
-
-            if r.get("STREAM-STATUS") == "stream.online":
-                if "id" in request.json["event"]:
-                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                        r.sadd("STREAM-POSTED",
-                                request.json["event"]["id"])
-                    else:
-                        print("Stream already posted")
-                        return make_response("success", 201)
-                url = "https://api.twitch.tv/helix/streams?user_login={}".format(
-                    os.environ.get("USERNAME").lower())
-                request_header = {
-                    "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                    "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
-                }
-                response = requests.get(
-                    url, headers=request_header).json()
-                twitch_url = "https://www.twitch.tv/{}/".format(
-                    os.environ.get("USERNAME").lower())
-
-                if request.json["subscription"]["type"] == "channel.update":
-                    stream_title = request.json["event"]["title"]
-                    stream_game = request.json["event"]["category_name"]
-                else:
-                    stream_title = response["data"][0]["title"]
-                    stream_game = response["data"][0]["game_name"]
-                if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
-                    tweet = "{} [{}]\n\n{}".format(
-                        stream_title, stream_game, twitch_url)
-                    r.set("STREAM-TITLE", stream_title.rstrip())
-                    r.set("STREAM-GAME", "[{}]".format(stream_game))
-                    print(r.get("STREAM-TITLE"))
-                    thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
-                        os.environ.get("USERNAME").lower()))
-                    send_tweet(tweet)
-                    send_discord(response["data"][0], "twitch")
-                    send_firebase("twitch", response["data"][0])
+            if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
+                print("Signature Mismatch")
+                return make_response("failed", 403)
             else:
-                r.set("STREAM-TITLE", "Offline")
-                r.set("STREAM-GAME", "")
-            
+                print("Signature Match")
+                print(request.json["subscription"]["type"])
+
+                if "stream" in request.json["subscription"]["type"]:
+                    r.set("STREAM-STATUS",
+                            request.json["subscription"]["type"])
+
+                if r.get("STREAM-STATUS") == "stream.online":
+                    if "id" in request.json["event"]:
+                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                            r.sadd("STREAM-POSTED",
+                                    request.json["event"]["id"])
+                        else:
+                            print("Stream already posted")
+                            return make_response("success", 201)
+                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(
+                        os.environ.get("USERNAME").lower())
+                    request_header = {
+                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                    }
+                    response = requests.get(
+                        url, headers=request_header).json()
+                    twitch_url = "https://www.twitch.tv/{}/".format(
+                        os.environ.get("USERNAME").lower())
+
+                    if request.json["subscription"]["type"] == "channel.update":
+                        stream_title = request.json["event"]["title"]
+                        stream_game = request.json["event"]["category_name"]
+                    else:
+                        stream_title = response["data"][0]["title"]
+                        stream_game = response["data"][0]["game_name"]
+                    if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
+                        tweet = "{} [{}]\n\n{}".format(
+                            stream_title, stream_game, twitch_url)
+                        r.set("STREAM-TITLE", stream_title.rstrip())
+                        r.set("STREAM-GAME", "[{}]".format(stream_game))
+                        print(r.get("STREAM-TITLE"))
+                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
+                            os.environ.get("USERNAME").lower()))
+                        send_tweet(tweet)
+                        send_discord(response["data"][0])
+                        send_firebase("twitch", response["data"][0])
+                else:
+                    r.set("STREAM-TITLE", "Offline")
+                    r.set("STREAM-GAME", "")
             return make_response("success", 201)
     except Exception as e:
         send_discord_error(e)
