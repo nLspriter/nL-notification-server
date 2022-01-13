@@ -1,6 +1,5 @@
 from flask import Flask, request, make_response
 import os
-from .app import send_discord_error, tweepy, auth, choice, ascii_letters, requests, credentials, r, FCM_URL, json, hmac, hashlib, thumbnail
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
@@ -170,3 +169,6 @@ def webhook(request):
             return make_response("success", 201)
     except Exception as e:
         send_discord_error(e)
+
+
+from app import send_discord_error, tweepy, auth, choice, ascii_letters, requests, credentials, r, FCM_URL, json, hmac, hashlib, thumbnail
