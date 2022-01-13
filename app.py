@@ -47,7 +47,7 @@ def send_discord_error(error):
     except requests.exceptions.HTTPError as err:
         print(err)
     else:
-        print("Discord Notification Sent, code {}.".format(result.status_code))
+        print("Error Sent, code {}.".format(result.status_code))
 
 def thumbnail(url):
     request = requests.get(url, stream=True)
