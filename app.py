@@ -17,7 +17,7 @@ from datetime import datetime
 
 app = Flask(__name__)
 
-import twitch
+from twitch import webhook as twitchwebhook
 import youtube
 
 auth = tweepy.OAuthHandler(os.environ.get(
@@ -77,7 +77,7 @@ def status():
 def webhook(type):
     try:
         if type == "twitch":
-            return twitch.webhook(request)
+            return twitchwebhook(request)
         elif type == "youtube":
             return youtube.webhook(request)
     except Exception as e:
