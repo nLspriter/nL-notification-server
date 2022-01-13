@@ -76,9 +76,9 @@ def status():
 def webhook(type):
     try:
         if type == "twitch":
-            twitch.webhook(request)
+            return twitch.webhook(request)
         elif type == "youtube":
-            youtube.webhook(request)
+            return youtube.webhook(request)
     except Exception as e:
         send_discord_error(e)
 
