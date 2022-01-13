@@ -1,7 +1,5 @@
 from flask import Flask, request, make_response, render_template
 from pyasn1.type.univ import Null
-import twitch
-import youtube
 import xmltodict
 import hmac
 import hashlib
@@ -18,6 +16,9 @@ import cv2
 from datetime import datetime
 
 app = Flask(__name__)
+
+import twitch
+import youtube
 
 auth = tweepy.OAuthHandler(os.environ.get(
     "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
