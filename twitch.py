@@ -5,6 +5,7 @@ from random import choice
 from string import ascii_letters
 import hmac
 import hashlib
+import traceback
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
@@ -174,5 +175,5 @@ def webhook(request):
                     r.set("STREAM-GAME", "")
             return make_response("success", 201)
     except Exception as e:
-        send_discord_error(e)
+        send_discord_error(traceback.format_exc())
 
