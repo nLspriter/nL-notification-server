@@ -155,6 +155,7 @@ def webhook(request):
                         stream_title = request.json["event"]["title"]
                         stream_game = request.json["event"]["category_name"]
                     else:
+                        print(response["data"])
                         stream_title = response["data"][0]["title"]
                         stream_game = response["data"][0]["game_name"]
                     if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
