@@ -3,6 +3,8 @@ import os
 from helper import *
 from random import choice
 from string import ascii_letters
+import hmac
+import hashlib
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
