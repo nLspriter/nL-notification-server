@@ -119,7 +119,6 @@ def webhook(request):
                 str(request.get_data(True, True, False))
             key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
             data = bytes(message, "utf-8")
-            print(data)
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
 
@@ -148,8 +147,8 @@ def webhook(request):
                         "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
                         "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
                     }
-                    response = requests.get(
-                        url, headers=request_header).json()
+                    response = requests.get(url, headers=request_header).json()
+                    print(response)
                     twitch_url = "https://www.twitch.tv/{}/".format(
                         os.environ.get("USERNAME").lower())
 
