@@ -1,6 +1,8 @@
 from flask import Flask, request, make_response
 import os
-from app import send_discord_error, tweepy, auth, choice, ascii_letters, requests, credentials, r, FCM_URL, json, hmac, hashlib, thumbnail
+from helper import *
+from random import choice
+from string import ascii_letters
 
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])

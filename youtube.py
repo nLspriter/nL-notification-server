@@ -1,10 +1,10 @@
 from flask import Flask, request, make_response
 import os
 import xmltodict
-from app import *
+from helper import *
 
 def send_tweet(tweet):
-    api = tweepy.API(app.auth)
+    api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
             api.update_with_media("thumbnail.jpg", status=tweet)
@@ -15,7 +15,7 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 def send_discord(data, platform):
-    api = tweepy.API(app.auth)
+    api = tweepy.API(auth)
 
     embed = {
         "username": os.environ.get("USERNAME"),
@@ -33,7 +33,7 @@ def send_discord(data, platform):
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
 def send_firebase(platform, data):
-    access_token_info = app.credentials.get_access_token()
+    access_token_info = credentials.get_access_token()
     headers = {
         "Authorization": "Bearer " + access_token_info.access_token,
         "Content-Type": "application/json; UTF-8",
@@ -92,9 +92,9 @@ def webhook(request):
                 os.environ.get("YOUTUBE-API-KEY"), video_id)
             response = requests.get(url).json()
 
-            if video_id not in app.r.smembers("VIDEOS-POSTED"):
+            if video_id not in r.smembers("VIDEOS-POSTED"):
                 if response["items"][0]["snippet"]["liveBroadcastContent"].lower() != "upcoming":
-                    app.r.sadd("VIDEOS-POSTED", video_id)
+                    r.sadd("VIDEOS-POSTED", video_id)
                 else:
                     print("Video is not live yet")
                     return make_response("success", 201)
@@ -102,16 +102,16 @@ def webhook(request):
                 print("Video already posted")
                 return make_response("success", 201)
 
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, app.r.get("LAST-VIDEO-DATE")):
+            if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
                 tweet = ("{}\n\n{}".format(video_title, video_url))
-                app.thumbnail(
+                thumbnail(
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
                 send_discord(video_info, "youtube")
                 send_firebase("youtube", video_info)
-                app.r.set("LAST-VIDEO", video_id)
-                app.r.set("LAST-VIDEO-TITLE", video_title)
-                app.r.set("LAST-VIDEO-DATE", video_published)
+                r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
+                r.set("LAST-VIDEO-DATE", video_published)
 
         except KeyError:
             print("Video deleted, retrieving last video from channel")
@@ -123,12 +123,12 @@ def webhook(request):
                 video_id = video_info["yt:videoId"]
                 video_title = video_info["title"]
                 video_published = video_info["published"]
-                app.r.set("LAST-VIDEO", video_id)
-                app.r.set("LAST-VIDEO-TITLE", video_title)
-                app.r.set("LAST-VIDEO-DATE", video_published)
+                r.set("LAST-VIDEO", video_id)
+                r.set("LAST-VIDEO-TITLE", video_title)
+                r.set("LAST-VIDEO-DATE", video_published)
             except KeyError:
                 print("No videos found")
-                app.r.set("LAST-VIDEO", "None")
+                r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
         return make_response("success", 201)
@@ -138,7 +138,7 @@ def webhook(request):
 
 def comparedate(newdate, lastdate):
     if lastdate == None:
-        app.r.set("LAST-VIDEO-DATE", newdate)
+        r.set("LAST-VIDEO-DATE", newdate)
         return True
     if datetime.fromisoformat(newdate) > datetime.fromisoformat(lastdate):
         return True
