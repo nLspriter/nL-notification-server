@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import make_response
 import os
 from helper import *
 from random import choice
@@ -148,7 +148,6 @@ def webhook(request):
                         "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
                     }
                     response = requests.get(url, headers=request_header).json()
-                    print(response)
                     twitch_url = "https://www.twitch.tv/{}/".format(
                         os.environ.get("USERNAME").lower())
 

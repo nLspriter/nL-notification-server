@@ -1,4 +1,4 @@
-from flask import Flask, request, make_response
+from flask import make_response
 import os
 import xmltodict
 from helper import *
@@ -15,7 +15,7 @@ def send_tweet(tweet):
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(data, platform):
+def send_discord(data):
     api = tweepy.API(auth)
 
     embed = {
@@ -33,7 +33,7 @@ def send_discord(data, platform):
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
-def send_firebase(platform, data):
+def send_firebase(data):
     access_token_info = credentials.get_access_token()
     headers = {
         "Authorization": "Bearer " + access_token_info.access_token,
@@ -44,9 +44,9 @@ def send_firebase(platform, data):
     title = data["title"]
     fcm_message = {
         "message": {
-            "topic": platform,
+            "topic": "youtube",
             "notification": {
-                "title": platform.capitalize(),
+                "title": "YouTube",
                 "body": title
             },
             "data": {
