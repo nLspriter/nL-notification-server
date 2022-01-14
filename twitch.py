@@ -118,6 +118,7 @@ def webhook(request):
                 str(request.get_data(True, True, False))
             key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
             data = bytes(message, "utf-8")
+            print(data)
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
 
@@ -155,7 +156,6 @@ def webhook(request):
                         stream_title = request.json["event"]["title"]
                         stream_game = request.json["event"]["category_name"]
                     else:
-                        print(response["data"])
                         stream_title = response["data"][0]["title"]
                         stream_game = response["data"][0]["game_name"]
                     if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
