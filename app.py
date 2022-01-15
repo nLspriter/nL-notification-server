@@ -26,7 +26,7 @@ def webhook(type):
             return twitch.webhook(request)
         elif type == "youtube":
             return youtube.webhook(request)
-    except Exception as e:
+    except Exception:
         send_discord_error(traceback.format_exc())
 
 @app.route("/data")
@@ -80,8 +80,8 @@ def post_twitch():
         twitch.send_tweet(tweet)
         twitch.send_discord(response["data"][0])
         twitch.send_firebase("twitch", response["data"][0])
-    except Exception as e:
-        send_discord_error(e)
+    except Exception:
+        send_discord_error(traceback.format_exc())
     return make_response("success", 201)
 
 @app.route("/post-youtube")
@@ -104,8 +104,8 @@ def post_youtube():
         r.set("LAST-VIDEO", video_id)
         r.set("LAST-VIDEO-TITLE", video_title)
         r.set("LAST-VIDEO-DATE", video_published)
-    except Exception as e:
-        send_discord_error(e)
+    except Exception:
+        send_discord_error(traceback.format_exc())
     return make_response("success", 201)
 
 @app.route("/")
