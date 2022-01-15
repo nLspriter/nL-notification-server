@@ -109,8 +109,8 @@ def webhook(request):
                 thumbnail(
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
-                send_discord(video_info, "youtube")
-                send_firebase("youtube", video_info)
+                send_discord(video_info)
+                send_firebase(video_info)
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
                 r.set("LAST-VIDEO-DATE", video_published)
