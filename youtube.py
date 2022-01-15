@@ -2,7 +2,7 @@ from flask import make_response
 import os
 import xmltodict
 from helper import *
-import datetime
+from datetime import datetime
 import traceback
 
 def send_tweet(tweet):
