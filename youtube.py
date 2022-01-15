@@ -3,6 +3,7 @@ import os
 import xmltodict
 from helper import *
 import datetime
+import traceback
 
 def send_tweet(tweet):
     api = tweepy.API(auth)
@@ -133,8 +134,8 @@ def webhook(request):
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
         return make_response("success", 201)
-    except Exception as e:
-        send_discord_error(e)
+    except Exception:
+        send_discord_error(traceback.format_exc())
 
 
 def comparedate(newdate, lastdate):

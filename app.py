@@ -6,6 +6,7 @@ import requests
 from helper import *
 import twitch
 import youtube
+import traceback
 
 app = Flask(__name__)
 
@@ -26,7 +27,7 @@ def webhook(type):
         elif type == "youtube":
             return youtube.webhook(request)
     except Exception as e:
-        send_discord_error(e)
+        send_discord_error(traceback.format_exc())
 
 @app.route("/data")
 def load_data():

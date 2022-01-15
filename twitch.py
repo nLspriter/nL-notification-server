@@ -172,6 +172,6 @@ def webhook(request):
                     r.set("STREAM-TITLE", "Offline")
                     r.set("STREAM-GAME", "")
             return make_response("success", 201)
-    except Exception as e:
+    except Exception:
         send_discord_error(traceback.format_exc())
 
