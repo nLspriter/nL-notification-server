@@ -109,6 +109,8 @@ def post_youtube():
         r.set("LAST-VIDEO", video_id)
         r.set("LAST-VIDEO-TITLE", video_title)
         r.set("LAST-VIDEO-DATE", video_published)
+        if video_id not in r.smembers("VIDEOS-POSTED"):
+            r.sadd("VIDEOS-POSTED", video_id)
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
