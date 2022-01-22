@@ -56,7 +56,10 @@ def send_discord(data):
     ]
 
     embed["content"] = content
-    result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json=embed)
+    for count in range(5):
+        result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json=embed)
+        if result.status_code == 204:
+            break
     try:
         result.raise_for_status()
     except requests.exceptions.HTTPError as err:
