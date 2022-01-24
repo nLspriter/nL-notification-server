@@ -131,7 +131,7 @@ def notifications():
 
 
 @app.route("/thumbnail")
-def thumbnail():
+def thumbnail_overlay():
     return render_template("thumbnail.html")
 
 
