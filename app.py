@@ -101,8 +101,7 @@ def post_youtube():
         video_title = video_info["title"]
         video_published = video_info["published"]
         tweet = ("{}\n\n{}".format(video_title, video_url))
-        thumbnail(
-            "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
+        thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
         youtube.send_tweet(tweet)
         youtube.send_discord(video_info)
         youtube.send_firebase(video_info)
