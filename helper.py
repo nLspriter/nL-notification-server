@@ -57,6 +57,7 @@ def thumbnail(url):
 
 def subscribe_topic(topic, token):
     response = messaging.subscribe_to_topic(token, topic)
+    print(response)
     return(response)
 
 def unsubscribe_topic(topic, token):
