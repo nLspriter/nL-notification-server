@@ -7,6 +7,7 @@ from helper import *
 import twitch
 import youtube
 import traceback
+import firebase_admin.messaging as messaging
 
 app = Flask(__name__)
 app.config["REDIS_URL"] = os.environ.get("REDIS_URL")
@@ -113,6 +114,11 @@ def post_youtube():
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
+
+@app.route("/subscribe-twitch/<id>", methods=["GET", "POST"])
+def subscribe_twitch(id):
+    response = messaging.subscribe_to_topic(id, "twitch")
+    return(response)
 
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():

@@ -6,6 +6,7 @@ import json
 import base64
 from oauth2client.service_account import ServiceAccountCredentials
 import cv2
+import firebase_admin
 
 auth = tweepy.OAuthHandler(os.environ.get(
     "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
@@ -22,6 +23,8 @@ sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+
+default_app = firebase_admin.initialize_app(firebase_admin.credentials.Certificate(sa_json))
 
 def send_discord_error(error):
     embed = {
