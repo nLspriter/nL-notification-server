@@ -23,6 +23,8 @@ SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
+default_app = firebase_admin.initialize_app(firebase_admin.credentials.Certificate(sa_json))
+
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
 def send_discord_error(error):
