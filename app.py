@@ -116,12 +116,12 @@ def post_youtube():
 
 @app.route("/subscribe-twitch/<token>", methods=["POST"])
 def subscribe_twitch(token):
-    subscribe_topic("twitch-browser", token)
+    subscribe_topic("twitch", token)
     return make_response("success", 201)
 
 @app.route("/unsubscribe-twitch/<token>", methods=["POST"])
 def unsubscribe_twitch(token):
-    unsubscribe_topic("twitch-browser", token)
+    unsubscribe_topic("twitch", token)
     return make_response("success", 201)
 
 @app.route("/subscribe-youtube/<token>", methods=["POST"])
