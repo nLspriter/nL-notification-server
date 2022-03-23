@@ -56,10 +56,11 @@ def thumbnail(url):
         print("Unable to download image")
 
 def subscribe_topic(topic, token):
-    response = messaging.subscribe_to_topic(token, topic)
+    response = messaging.subscribe_to_topic(token, topic, default_app)
     print(response)
-    print(response.success_count, 'tokens were unsubscribed successfully')
-    return(response)
+    print(response.success_count, 'tokens were subscribed successfully')
 
 def unsubscribe_topic(topic, token):
-    return
+    response = messaging.unsubscribe_from_topic(token, topic, default_app)
+    print(response)
+    print(response.success_count, 'tokens were unsubscribed successfully')

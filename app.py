@@ -114,9 +114,21 @@ def post_youtube():
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
 
-@app.route("/subscribe-twitch/<token>", methods=["GET", "POST"])
+@app.route("/subscribe-twitch/<token>", methods=["POST"])
 def subscribe_twitch(token):
     return subscribe_topic("twitch", token)
+
+@app.route("/unsubscribe-twitch/<token>", methods=["POST"])
+def unsubscribe_twitch(token):
+    return unsubscribe_topic("twitch", token)
+
+@app.route("/subscribe-youtube/<token>", methods=["POST"])
+def subscribe_youtube(token):
+    return subscribe_topic("youtube", token)
+
+@app.route("/unsubscribe-youtube/<token>", methods=["POST"])
+def unsubscribe_youtube(token):
+    return unsubscribe_topic("youtube", token)
 
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():
