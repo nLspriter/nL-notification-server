@@ -57,10 +57,8 @@ def thumbnail(url):
 
 def subscribe_topic(topic, token):
     response = messaging.subscribe_to_topic(token, topic, default_app)
-    print(response)
-    print(response.success_count, 'tokens were subscribed successfully')
+    print(response.success_count, 'tokens were subscribed to {} successfully'.format(topic))
 
 def unsubscribe_topic(topic, token):
     response = messaging.unsubscribe_from_topic(token, topic, default_app)
-    print(response)
-    print(response.success_count, 'tokens were unsubscribed successfully')
+    print(response.success_count, 'tokens were unsubscribed {} successfully'.format(topic))
