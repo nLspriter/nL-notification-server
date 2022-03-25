@@ -5,6 +5,7 @@ from helper import *
 from datetime import datetime
 import traceback
 
+
 def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
@@ -15,6 +16,7 @@ def send_tweet(tweet):
             api.update_status(status=tweet)
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
+
 
 def send_discord(data):
     api = tweepy.API(auth)
@@ -27,7 +29,8 @@ def send_discord(data):
     url = data["link"]["@href"]
     embed["content"] = "@everyone {}\n{}".format(data["title"], url)
     for count in range(5):
-        result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json=embed)
+        result = requests.post(os.environ.get(
+            "DISCORD-WEBHOOK-URL"), json=embed)
         if result.status_code == 204:
             break
     try:
@@ -36,6 +39,7 @@ def send_discord(data):
         print(err)
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
+
 
 def send_firebase(data):
     access_token_info = credentials.get_access_token()
@@ -62,6 +66,11 @@ def send_firebase(data):
                 },
                 "direct_boot_ok": True,
                 "priority": "high"
+            },
+            "webpush": {
+                "fcmOptions": {
+                    "link": url
+                }
             }
         }
     }
@@ -78,7 +87,7 @@ def send_firebase(data):
 
 
 def webhook(request):
-    try:        
+    try:
         challenge = request.args.get("hub.challenge")
 
         if challenge:

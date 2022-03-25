@@ -93,6 +93,11 @@ def send_firebase(platform, data):
                 },
                 "direct_boot_ok": True,
                 "priority": "high"
+            },
+            "webpush": {
+                "fcmOptions": {
+                    "link": url
+                }
             }
         }
     }
