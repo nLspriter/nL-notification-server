@@ -67,7 +67,7 @@ def send_discord(data):
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
-def send_firebase(platform, data):
+def send_mobile():
     access_token_info = credentials.get_access_token()
     headers = {
         "Authorization": "Bearer " + access_token_info.access_token,
@@ -79,9 +79,9 @@ def send_firebase(platform, data):
     title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     fcm_message = {
         "message": {
-            "topic": platform,
+            "topic": "twitch",
             "notification": {
-                "title": platform.capitalize(),
+                "title": "Twitch",
                 "body": title
             },
             "data": {
@@ -93,11 +93,6 @@ def send_firebase(platform, data):
                 },
                 "direct_boot_ok": True,
                 "priority": "high"
-            },
-            "webpush": {
-                "fcmOptions": {
-                    "link": url
-                }
             }
         }
     }
@@ -106,7 +101,38 @@ def send_firebase(platform, data):
         fcm_message), headers=headers)
 
     if resp.status_code == 200:
-        print("Message sent to Firebase for delivery, response:")
+        print("Message sent to Firebase Mobile for delivery, response:")
+        print(resp.text)
+    else:
+        print("Unable to send message to Firebase")
+        print(resp.text)
+
+def send_browser():
+    access_token_info = credentials.get_access_token()
+    headers = {
+        "Authorization": "Bearer " + access_token_info.access_token,
+        "Content-Type": "application/json; UTF-8",
+    }
+
+    url = "https://www.twitch.tv/{}/".format(
+        os.environ.get("USERNAME").lower())
+    title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
+    fcm_message = {
+        "message": {
+            "topic": "twitch-browser",
+            "data": {
+                "title": "Twitch",
+                "body": title,
+                "url": url,
+            }
+        }
+    }
+
+    resp = requests.post(FCM_URL, data=json.dumps(
+        fcm_message), headers=headers)
+
+    if resp.status_code == 200:
+        print("Message sent to Firebase Browser for delivery, response:")
         print(resp.text)
     else:
         print("Unable to send message to Firebase")
@@ -175,7 +201,8 @@ def webhook(request):
                             os.environ.get("USERNAME").lower()))
                         send_tweet(tweet)
                         send_discord(response["data"][0])
-                        send_firebase("twitch", response["data"][0])
+                        send_mobile()
+                        send_browser()
                 else:
                     r.set("STREAM-TITLE", "Offline")
                     r.set("STREAM-GAME", "")
