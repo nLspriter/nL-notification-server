@@ -66,6 +66,9 @@ def send_mobile(data):
                 },
                 "direct_boot_ok": True,
                 "priority": "high"
+            },
+            "fcm_options" : {
+                "link": url
             }
         }
     }
