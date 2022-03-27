@@ -67,10 +67,8 @@ def send_mobile(data):
                 "direct_boot_ok": True,
                 "priority": "high"
             },
-            "webpush": {
-                "fcm_options": {
-                    "link": url
-                }
+            "fcm_options" : {
+                "link": url
             }
         }
     }
@@ -84,7 +82,6 @@ def send_mobile(data):
     else:
         print("Unable to send message to Firebase")
         print(resp.text)
-
 
 def send_browser(data):
     access_token_info = credentials.get_access_token()
@@ -115,7 +112,6 @@ def send_browser(data):
     else:
         print("Unable to send message to Firebase")
         print(resp.text)
-
 
 def webhook(request):
     try:
