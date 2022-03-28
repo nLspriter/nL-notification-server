@@ -6,6 +6,8 @@ import json
 import base64
 from oauth2client.service_account import ServiceAccountCredentials
 import cv2
+import firebase_admin
+import firebase_admin.messaging as messaging
 
 auth = tweepy.OAuthHandler(os.environ.get(
     "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
@@ -20,6 +22,8 @@ SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
 sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
+
+default_app = firebase_admin.initialize_app(firebase_admin.credentials.Certificate(sa_json))
 
 r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
 
@@ -50,3 +54,11 @@ def thumbnail(url):
             os.remove("thumbnail.jpg")
     else:
         print("Unable to download image")
+
+def subscribe_topic(topic, token):
+    response = messaging.subscribe_to_topic(token, topic, default_app)
+    print(response.success_count, 'tokens were subscribed to {} successfully'.format(topic))
+
+def unsubscribe_topic(topic, token):
+    response = messaging.unsubscribe_from_topic(token, topic, default_app)
+    print(response.success_count, 'tokens were unsubscribed {} successfully'.format(topic))

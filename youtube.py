@@ -5,6 +5,7 @@ from helper import *
 from datetime import datetime
 import traceback
 
+
 def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
@@ -15,6 +16,7 @@ def send_tweet(tweet):
             api.update_status(status=tweet)
     except tweepy.TweepError as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
+
 
 def send_discord(data):
     api = tweepy.API(auth)
@@ -27,7 +29,9 @@ def send_discord(data):
     url = data["link"]["@href"]
     embed["content"] = "@everyone {}\n{}".format(data["title"], url)
     for count in range(5):
-        result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json=embed)
+        result = requests.post(os.environ.get(
+            "DISCORD-WEBHOOK-URL"), json=embed)
+
         if result.status_code == 204:
             break
     try:
@@ -37,7 +41,8 @@ def send_discord(data):
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
 
-def send_firebase(data):
+
+def send_mobile(data):
     access_token_info = credentials.get_access_token()
     headers = {
         "Authorization": "Bearer " + access_token_info.access_token,
@@ -70,15 +75,44 @@ def send_firebase(data):
         fcm_message), headers=headers)
 
     if resp.status_code == 200:
-        print("Message sent to Firebase for delivery, response:")
+        print("Message sent to Firebase Mobile for delivery, response:")
         print(resp.text)
     else:
         print("Unable to send message to Firebase")
         print(resp.text)
 
+def send_browser(data):
+    access_token_info = credentials.get_access_token()
+    headers = {
+        "Authorization": "Bearer " + access_token_info.access_token,
+        "Content-Type": "application/json; UTF-8",
+    }
+
+    url = data["link"]["@href"]
+    title = data["title"]
+    fcm_message = {
+        "message": {
+            "topic": "youtube-browser",
+            "data": {
+                "title": "YouTube",
+                "body": title,
+                "url": url,
+            }
+        }
+    }
+
+    resp = requests.post(FCM_URL, data=json.dumps(
+        fcm_message), headers=headers)
+
+    if resp.status_code == 200:
+        print("Message sent to Firebase Browser for delivery, response:")
+        print(resp.text)
+    else:
+        print("Unable to send message to Firebase")
+        print(resp.text)
 
 def webhook(request):
-    try:        
+    try:
         challenge = request.args.get("hub.challenge")
 
         if challenge:
@@ -113,7 +147,8 @@ def webhook(request):
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
                 send_tweet(tweet)
                 send_discord(video_info)
-                send_firebase(video_info)
+                send_mobile(video_info)
+                send_browser(video_info)
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
                 r.set("LAST-VIDEO-DATE", video_published)

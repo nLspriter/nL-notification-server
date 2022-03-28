@@ -1,5 +1,5 @@
-from flask import Flask, request, make_response, render_template
-from pyasn1.type.univ import Null
+from flask import Flask, request, Response, make_response, render_template
+from flask.helpers import send_file
 import xmltodict
 import os
 import requests
@@ -9,6 +9,7 @@ import youtube
 import traceback
 
 app = Flask(__name__)
+app.config["REDIS_URL"] = os.environ.get("REDIS_URL")
 
 @app.route("/status", methods=["GET"])
 def status():
@@ -50,11 +51,14 @@ def load_data():
         xml_dict = xmltodict.parse(youtube_response.content)
         video_info = xml_dict["feed"]["entry"][0]
         video_title = video_info["title"]
+        video_id = video_info["yt:videoId"]
     except:
         video_title = "No videos found"
+        video_id = ""
     data = {
         "stream_status": "{} {}".format(stream_title, stream_game),
-        "video_title": video_title
+        "video_title": video_title,
+        "video_id": video_id
     }
     return data
 
@@ -79,10 +83,12 @@ def post_twitch():
             os.environ.get("USERNAME").lower()))
         twitch.send_tweet(tweet)
         twitch.send_discord(response["data"][0])
-        twitch.send_firebase("twitch", response["data"][0])
+        twitch.send_mobile()
+        twitch.send_browser()
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
+
 
 @app.route("/post-youtube")
 def post_youtube():
@@ -99,7 +105,8 @@ def post_youtube():
         thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
         youtube.send_tweet(tweet)
         youtube.send_discord(video_info)
-        youtube.send_firebase(video_info)
+        youtube.send_mobile(video_info)
+        youtube.send_browser(video_info)
         r.set("LAST-VIDEO", video_id)
         r.set("LAST-VIDEO-TITLE", video_title)
         r.set("LAST-VIDEO-DATE", video_published)
@@ -109,10 +116,55 @@ def post_youtube():
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
 
+@app.route("/subscribe-twitch/<token>", methods=["POST"])
+def subscribe_twitch(token):
+    subscribe_topic("twitch-browser", token)
+    return make_response("success", 201)
+
+@app.route("/unsubscribe-twitch/<token>", methods=["POST"])
+def unsubscribe_twitch(token):
+    unsubscribe_topic("twitch-browser", token)
+    return make_response("success", 201)
+
+@app.route("/subscribe-youtube/<token>", methods=["POST"])
+def subscribe_youtube(token):
+    subscribe_topic("youtube-browser", token)
+    return make_response("success", 201)
+
+@app.route("/unsubscribe-youtube/<token>", methods=["POST"])
+def unsubscribe_youtube(token):
+    unsubscribe_topic("youtube-browser", token)
+    return make_response("success", 201)
+
+@app.route("/trigger", methods=["GET", "POST"])
+def trigger():
+    def respond():
+        if request.method == "POST":
+            print("test")
+            yield "data: {}\nevent: trigger\n\n"
+        else:
+            yield "data: {}\nevent: null\n\n"
+    return Response(respond(), mimetype='text/event-stream')
+
+@app.route("/notifications")
+def notifications():
+    data = load_data()
+    return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
+
+
+@app.route("/thumbnail")
+def thumbnail_overlay():
+    return render_template("thumbnail.html")
+
+
+@app.route("/overlay")
+def overlay():
+    return render_template("overlay.html")
+
+
 @app.route("/")
 def home():
-    data = load_data()
-    return render_template("home.html", stitle=data["stream_status"], ytitle=data["video_title"])
+    return render_template("home.html")
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)

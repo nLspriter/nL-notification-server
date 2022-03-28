@@ -2,53 +2,27 @@
 <html>
 
 <head>
+  <title>nL Control Panel</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
-  <script type="text/javascript">
-    $(function () {
-      $("#reload-data").on("click", function (e) {
-        e.preventDefault()
-        $.getJSON("/data",
-          function (data) {
-            $("#twitch-data").html(data["stream_status"]);
-            $("#youtube-data").html(data["video_title"]);
-          });
-        return false;
-      });
-    });
-  </script>
-
-  <script type="text/javascript">
-    $(function () {
-      $('#post-twitch').on('click', function (e) {
-        $.getJSON('/post-twitch',
-          function (data) {
-          });
-        return false;
-      });
-    });</script>
-
-  <script type="text/javascript">
-    $(function () {
-      $('#post-youtube').on('click', function (e) {
-        $.getJSON('/post-youtube',
-          function (data) {
-          });
-        return false;
-      });
-    });</script>
 </head>
 
 <body>
-  <h1>nL Server</h1>
-  <div>
-    <div><b>Twitch</b></div>
-    <div id="twitch-data">{{stitle}}</div>
-    <div><b>Youtube</b></div>
-    <div id="youtube-data">{{ytitle}}</div>
-    <div><input type="button" id="reload-data" value="Reload Data" onclick="reload_data"></input></div>
-    <div><input type="button" id="post-twitch" value="Post Twitch" onclick="post_twitch"></input></div>
-    <div><input type="button" id="post-youtube" value="Post YouTube" onclick="post_youtube"></input></div>
-  </div>
+  <div class="container">
+    <div class="Sidebar">
+      <ul class="nav-list">
+        <li><a href="{{ url_for('home') }}">Home</a></li>
+        <li><a href="{{ url_for('notifications') }}">Notifications</a></li>
+        <li><a href="{{ url_for('thumbnail_overlay') }}">Thumbnail Overlay</a></li>
+      </ul>
+    </div>
+    <div class="Main">
+      <div class="Header">
+        <h1>nL Control Panel</h1>
+      </div>
+      <div class="Main-Area">
+      </div>
+    </div>
 </body>
 
 </html>

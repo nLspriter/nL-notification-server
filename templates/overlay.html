@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>nL Control Panel</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    <style>
+        #test {
+            background-color: white;
+            font-size: 30px;
+            position: absolute;
+            left: 0%;
+            top: 10%;
+        }
+    </style>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function () {
+            $("#load-data").on("click", function (e) {
+                e.preventDefault()
+                $.getJSON("/data",
+                    function (data) {
+                        $("#youtube-thumbnail").attr("src", 'https://img.youtube.com/vi/' + data["video_id"] + '/maxresdefault.jpg');
+                        $("#youtube-data").html(data["video_title"]);
+                    });
+                return false;
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div id="test"><img id="youtube-thumbnail">
+        <div id="youtube-data"></div>
+    </div>
+    <input type="button" id="load-data" value="Click Me" />
+    <script>
+        var source = new EventSource("/trigger");
+        source.addEventListener('trigger', function (e) {
+            console.log(e.data)
+            var divPosition = $("test").offset();
+            if (divPosition.left < 0) {
+                $("test").animate({
+                    "left": 0
+                }, 1000);
+            } else {
+                $("test").animate({
+                    "left": -1280
+                }, 1000);
+            };
+        }, true);
+    </script>
+</body>
+
+</html>
