@@ -147,6 +147,7 @@ def trigger():
     return Response(respond(), mimetype='text/event-stream')
 
 @app.route("/notifications")
+@requires_auth
 def notifications():
     data = load_data()
     return render_template("notifications.html", stitle=data["stream_status"], ytitle=data["video_title"])
