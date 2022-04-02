@@ -154,6 +154,7 @@ def notifications():
 
 
 @app.route("/thumbnail")
+@requires_auth
 def thumbnail_overlay():
     return render_template("thumbnail.html")
 
