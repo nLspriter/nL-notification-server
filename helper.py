@@ -69,7 +69,7 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'admin' and password == 'secret'
+    return username == 'admin' and password == os.environ.get("SERVER-PASSWORD")
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""
