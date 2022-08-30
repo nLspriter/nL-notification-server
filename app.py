@@ -9,7 +9,7 @@ import youtube
 import traceback
 
 app = Flask(__name__)
-app.config["REDIS_URL"] = os.environ.get("REDIS_URL")
+app.config["REDIS_URL"] = os.getenv("REDIS_URL")
 
 @app.route("/status", methods=["GET"])
 def status():
@@ -33,10 +33,10 @@ def webhook(type):
 @app.route("/data")
 def load_data():
     twitch_url = "https://api.twitch.tv/helix/streams?user_login={}".format(
-        os.environ.get("USERNAME").lower())
+        os.getenv("USERNAME").lower())
     request_header = {
-        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+        "Authorization": "Bearer {}".format(os.getenv("TWITCH-AUTHORIZATION")),
+        "Client-ID": os.getenv("TWITCH-CLIENT-ID")
     }
     twitch_response = requests.get(twitch_url, headers=request_header).json()
     try:
@@ -47,7 +47,7 @@ def load_data():
         stream_game = ""
     try:
         youtube_response = requests.get(
-            "https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.environ.get("YOUTUBE-CHANNEL-ID")))
+            "https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.getenv("YOUTUBE-CHANNEL-ID")))
         xml_dict = xmltodict.parse(youtube_response.content)
         video_info = xml_dict["feed"]["entry"][0]
         video_title = video_info["title"]
@@ -65,22 +65,22 @@ def load_data():
 @app.route("/post-twitch")
 def post_twitch():
     twitch_url = "https://api.twitch.tv/helix/streams?user_login={}".format(
-        os.environ.get("USERNAME").lower())
+        os.getenv("USERNAME").lower())
     request_header = {
-        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+        "Authorization": "Bearer {}".format(os.getenv("TWITCH-AUTHORIZATION")),
+        "Client-ID": os.getenv("TWITCH-CLIENT-ID")
     }
     response = requests.get(twitch_url, headers=request_header).json()
     try:
         stream_title = response["data"][0]["title"].rstrip()
         stream_game = "{}".format(response["data"][0]["game_name"])
         twitch_url = "https://www.twitch.tv/{}/".format(
-            os.environ.get("USERNAME").lower())
+            os.getenv("USERNAME").lower())
         tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
         r.set("STREAM-TITLE", stream_title.rstrip())
         r.set("STREAM-GAME", "[{}]".format(stream_game))
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
-            os.environ.get("USERNAME").lower()))
+            os.getenv("USERNAME").lower()))
         twitch.send_tweet(tweet)
         twitch.send_discord(response["data"][0])
         twitch.send_mobile()
@@ -93,7 +93,7 @@ def post_twitch():
 @app.route("/post-youtube")
 def post_youtube():
     req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(
-        os.environ.get("YOUTUBE-CHANNEL-ID")))
+        os.getenv("YOUTUBE-CHANNEL-ID")))
     xml_dict = xmltodict.parse(req.content)
     try:
         video_info = xml_dict["feed"]["entry"][0]
