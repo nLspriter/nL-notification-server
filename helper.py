@@ -11,23 +11,23 @@ import firebase_admin.messaging as messaging
 from functools import wraps
 from flask import request, Response
 
-auth = tweepy.OAuthHandler(os.environ.get(
-    "TWITTER-CONSUMER-KEY"), os.environ.get("TWITTER-CONSUMER-SECRET"))
-auth.set_access_token(os.environ.get("TWITTER-ACCESS-TOKEN"),
-                      os.environ.get("TWITTER-ACCESS-SECRET"))
+auth = tweepy.OAuthHandler(os.getenv(
+    "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"))
+auth.set_access_token(os.getenv("TWITTER-ACCESS-TOKEN"),
+                      os.getenv("TWITTER-ACCESS-SECRET"))
 
 BASE_URL = "https://fcm.googleapis.com"
 FCM_ENDPOINT = "v1/projects/{}/messages:send".format(
-    os.environ.get("FCM-PROJECT-ID"))
+    os.getenv("FCM-PROJECT-ID"))
 FCM_URL = BASE_URL + "/" + FCM_ENDPOINT
 SCOPES = ["https://www.googleapis.com/auth/firebase.messaging"]
 
-sa_json = json.loads(base64.b64decode(os.environ.get("SERVICE-ACCOUNT-JSON")))
+sa_json = json.loads(base64.b64decode(os.getenv("SERVICE-ACCOUNT-JSON")))
 credentials = ServiceAccountCredentials.from_json_keyfile_dict(sa_json, SCOPES)
 
 default_app = firebase_admin.initialize_app(firebase_admin.credentials.Certificate(sa_json))
 
-r = redis.from_url(os.environ.get("REDIS_URL"), decode_responses=True)
+r = redis.from_url(os.getenv("REDIS_URL"), decode_responses=True)
 
 def send_discord_error(error):
     embed = {
@@ -35,7 +35,7 @@ def send_discord_error(error):
     }
     content = "<@120242625809743876> {}".format(error)
     embed["content"] = content
-    result = requests.post(os.environ.get("DISCORD-ERROR-URL"), json=embed)
+    result = requests.post(os.getenv("DISCORD-ERROR-URL"), json=embed)
     try:
         result.raise_for_status()
     except requests.exceptions.HTTPError as err:
@@ -69,7 +69,7 @@ def check_auth(username, password):
     """This function is called to check if a username /
     password combination is valid.
     """
-    return username == 'admin' and password == os.environ.get("SERVER-PASSWORD")
+    return username == 'admin' and password == os.getenv("SERVER-PASSWORD")
 
 def authenticate():
     """Sends a 401 response that enables basic auth"""

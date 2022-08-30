@@ -22,14 +22,14 @@ def send_discord(data):
     api = tweepy.API(auth)
 
     embed = {
-        "username": os.environ.get("USERNAME"),
+        "username": os.getenv("USERNAME"),
         "avatar_url": api.me().profile_image_url
     }
 
     url = data["link"]["@href"]
     embed["content"] = "@everyone {}\n{}".format(data["title"], url)
     for count in range(5):
-        result = requests.post(os.environ.get(
+        result = requests.post(os.getenv(
             "DISCORD-WEBHOOK-URL"), json=embed)
 
         if result.status_code == 204:
@@ -128,7 +128,7 @@ def webhook(request):
             video_published = video_info["published"]
 
             url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet&key={}&id={}".format(
-                os.environ.get("YOUTUBE-API-KEY"), video_id)
+                os.getenv("YOUTUBE-API-KEY"), video_id)
             response = requests.get(url).json()
 
             if video_id not in r.smembers("VIDEOS-POSTED"):
@@ -157,7 +157,7 @@ def webhook(request):
             print("Video deleted, retrieving last video from channel")
             try:
                 req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(
-                    os.environ.get("YOUTUBE-CHANNEL-ID")))
+                    os.getenv("YOUTUBE-CHANNEL-ID")))
                 xml_dict = xmltodict.parse(req.content)
                 video_info = xml_dict["feed"]["entry"][0]
                 video_id = video_info["yt:videoId"]

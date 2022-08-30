@@ -25,7 +25,7 @@ def send_discord(data):
     api = tweepy.API(auth)
 
     embed = {
-        "username": os.environ.get("USERNAME"),
+        "username": os.getenv("USERNAME"),
         "avatar_url": api.me().profile_image_url
     }
 
@@ -36,7 +36,7 @@ def send_discord(data):
         thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 
     url = "https://www.twitch.tv/{}/".format(
-        os.environ.get("USERNAME").lower())
+        os.getenv("USERNAME").lower())
     content = "@everyone We're live! \n<{}>".format(url)
     embed["embeds"] = [
         {
@@ -44,7 +44,7 @@ def send_discord(data):
             "url": url,
             "color": 16711680,
             "author": {
-                "name": os.environ.get("USERNAME")
+                "name": os.getenv("USERNAME")
             },
             "image": {
                 "url": thumbnail
@@ -57,7 +57,7 @@ def send_discord(data):
 
     embed["content"] = content
     for count in range(5):
-        result = requests.post(os.environ.get("DISCORD-WEBHOOK-URL"), json=embed)
+        result = requests.post(os.getenv("DISCORD-WEBHOOK-URL"), json=embed)
         if result.status_code == 204:
             break
     try:
@@ -75,7 +75,7 @@ def send_mobile():
     }
 
     url = "https://www.twitch.tv/{}/".format(
-        os.environ.get("USERNAME").lower())
+        os.getenv("USERNAME").lower())
     title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     fcm_message = {
         "message": {
@@ -115,7 +115,7 @@ def send_browser():
     }
 
     url = "https://www.twitch.tv/{}/".format(
-        os.environ.get("USERNAME").lower())
+        os.getenv("USERNAME").lower())
     title = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     fcm_message = {
         "message": {
@@ -151,7 +151,7 @@ def webhook(request):
             message = headers["Twitch-Eventsub-Message-Id"] + \
                 headers["Twitch-Eventsub-Message-Timestamp"] + \
                 str(request.get_data(True, True, False))
-            key = bytes(os.environ.get("WEBHOOK-SECRET-KEY"), "utf-8")
+            key = bytes(os.getenv("WEBHOOK-SECRET-KEY"), "utf-8")
             data = bytes(message, "utf-8")
             signature = hmac.new(key, data, digestmod=hashlib.sha256)
             expected_signature = "sha256=" + signature.hexdigest()
@@ -176,14 +176,14 @@ def webhook(request):
                             print("Stream already posted")
                             return make_response("success", 201)
                     url = "https://api.twitch.tv/helix/streams?user_login={}".format(
-                        os.environ.get("USERNAME").lower())
+                        os.getenv("USERNAME").lower())
                     request_header = {
-                        "Authorization": "Bearer {}".format(os.environ.get("TWITCH-AUTHORIZATION")),
-                        "Client-ID": os.environ.get("TWITCH-CLIENT-ID")
+                        "Authorization": "Bearer {}".format(os.getenv("TWITCH-AUTHORIZATION")),
+                        "Client-ID": os.getenv("TWITCH-CLIENT-ID")
                     }
                     response = requests.get(url, headers=request_header).json()
                     twitch_url = "https://www.twitch.tv/{}/".format(
-                        os.environ.get("USERNAME").lower())
+                        os.getenv("USERNAME").lower())
 
                     if request.json["subscription"]["type"] == "channel.update":
                         stream_title = request.json["event"]["title"]
@@ -198,7 +198,7 @@ def webhook(request):
                         r.set("STREAM-GAME", "[{}]".format(stream_game))
                         print(r.get("STREAM-TITLE"))
                         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
-                            os.environ.get("USERNAME").lower()))
+                            os.getenv("USERNAME").lower()))
                         send_tweet(tweet)
                         send_discord(response["data"][0])
                         send_mobile()
