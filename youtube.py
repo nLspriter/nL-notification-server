@@ -195,9 +195,9 @@ def load_videos():
             os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
         for x in response["items"]:
-            if x["resourceId"]["videoId"] not in r.smembers("VIDEOS-LIBRARY"):
+            if x["snippet"]["resourceId"]["videoId"] not in r.smembers("VIDEOS-LIBRARY"):
                 videoDetails = {
-                    "id": x["resourceId"]["videoId"],
+                    "id": x["snippet"]["resourceId"]["videoId"],
                     "details": {
                         "title": x["snippet"]["title"],
                         "thumbnail": x["snippet"]["thumbnails"]["maxres"],
