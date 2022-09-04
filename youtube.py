@@ -205,8 +205,9 @@ def load_videos():
                     }
                 }
                 rdata = json.dumps(videoDetails)
+                print(rdata)
                 r.sadd("VIDEO-LIBRARY", rdata)
         if "nextPageToken" in response:
-            pageToken = response["nextPageToken"]
+            pageToken = "&pageToken={}".format(response["nextPageToken"])
         else:
             break
