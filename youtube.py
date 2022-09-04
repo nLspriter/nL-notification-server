@@ -201,7 +201,7 @@ def load_videos():
                     "details": {
                         "title": x["snippet"]["title"],
                         "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
-                        "publishedAt": x["snippet"]["publishedAt"]
+                        "publishedAt": datetime.fromisoformat(x["snippet"]["publishedAt"])
                     }
                 }
                 rdata = json.dumps(videoDetails)

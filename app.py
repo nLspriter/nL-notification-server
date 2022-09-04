@@ -143,6 +143,7 @@ def load_youtube_library():
     video_list = []
     for x in data:
         video_list.append(json.loads(x))
+    video_list.sort(key=lambda r: r.details.publishedAt)
     return make_response(jsonify(video_list), 201)
 
 @app.route("/youtube-library")
@@ -151,6 +152,7 @@ def youtube_library():
     video_list = []
     for x in data:
         video_list.append(json.loads(x))
+    video_list.sort(key=lambda r: r.details.publishedAt)
     return make_response(jsonify(video_list), 201)
 
 @app.route("/trigger", methods=["GET", "POST"])
