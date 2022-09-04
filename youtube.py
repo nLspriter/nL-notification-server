@@ -200,7 +200,7 @@ def load_videos():
                     "id": x["snippet"]["resourceId"]["videoId"],
                     "details": {
                         "title": x["snippet"]["title"],
-                        "thumbnail": x["snippet"]["thumbnails"]["maxres"],
+                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
                         "publishedAt": x["snippet"]["publishedAt"]
                     }
                 }

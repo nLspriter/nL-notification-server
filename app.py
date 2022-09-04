@@ -140,11 +140,11 @@ def unsubscribe_youtube(token):
 @app.route("/load-youtube-library")
 def load_youtube_library():
     youtube.load_videos()
-    return make_response(r.get("VIDEO-LIBRARY"), 201)
+    return make_response(json.loads(r.get("VIDEO-LIBRARY")), 201)
 
 @app.route("/youtube-library")
 def youtube_library():
-    return make_response(r.get("VIDEO-LIBRARY"), 201)
+    return make_response(json.loads(r.get("VIDEO-LIBRARY")), 201)
 
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():
