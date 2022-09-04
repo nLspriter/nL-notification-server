@@ -81,6 +81,7 @@ def send_mobile(data):
         print("Unable to send message to Firebase")
         print(resp.text)
 
+
 def send_browser(data):
     access_token_info = credentials.get_access_token()
     headers = {
@@ -110,6 +111,7 @@ def send_browser(data):
     else:
         print("Unable to send message to Firebase")
         print(resp.text)
+
 
 def webhook(request):
     try:
@@ -184,3 +186,26 @@ def comparedate(newdate, lastdate):
         return True
     else:
         return False
+
+
+def load_videos():
+    pageToken = ""
+    while True:
+        url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU5iCLgl2ccta5MqTf2VU8bQ&&key={}{}".format(
+            os.getenv("YOUTUBE-API-KEY"), pageToken)
+        response = requests.get(url).json()
+        for x in response["items"]:
+            if x["resourceId"]["videoId"] not in r.smembers("VIDEOS-LIBRARY"):
+                videoDetails = {
+                    "id": x["resourceId"]["videoId"],
+                    "details": {
+                        "title": x["snippet"]["title"],
+                        "thumbnail": x["snippet"]["thumbnails"]["maxres"],
+                        "publishedAt": x["snippet"]["publishedAt"]
+                    }
+                }
+                r.sadd("VIDEO-LIBRARY", videoDetails)
+        if "nextPageToken" in response:
+            pageToken = response["nextPageToken"]
+        else:
+            break

@@ -137,6 +137,15 @@ def unsubscribe_youtube(token):
     unsubscribe_topic("youtube-browser", token)
     return make_response("success", 201)
 
+@app.route("/load-youtube-library")
+def load_youtube_library():
+    youtube.load_videos()
+    return make_response(r.get("VIDEO-LIBRARY"), 201)
+
+@app.route("/youtube-library")
+def load_youtube_library():
+    return make_response(r.get("VIDEO-LIBRARY"), 201)
+
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():
     def respond():
