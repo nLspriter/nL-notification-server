@@ -204,7 +204,8 @@ def load_videos():
                         "publishedAt": x["snippet"]["publishedAt"]
                     }
                 }
-                r.sadd("VIDEO-LIBRARY", videoDetails)
+                rdata = json.dumps(videoDetails)
+                r.sadd("VIDEO-LIBRARY", rdata)
         if "nextPageToken" in response:
             pageToken = response["nextPageToken"]
         else:
