@@ -143,7 +143,7 @@ def load_youtube_library():
     return make_response(r.get("VIDEO-LIBRARY"), 201)
 
 @app.route("/youtube-library")
-def load_youtube_library():
+def youtube_library():
     return make_response(r.get("VIDEO-LIBRARY"), 201)
 
 @app.route("/trigger", methods=["GET", "POST"])
