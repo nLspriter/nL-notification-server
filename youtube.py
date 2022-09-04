@@ -211,3 +211,4 @@ def load_videos():
             pageToken = "&pageToken={}".format(response["nextPageToken"])
         else:
             break
+    return list(r.smembers("VIDEO-LIBRARY"))

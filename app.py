@@ -1,4 +1,4 @@
-from flask import Flask, request, Response, make_response, render_template
+from flask import Flask, request, Response, make_response, render_template, jsonify
 from flask.helpers import send_file
 import config
 import xmltodict
@@ -139,12 +139,19 @@ def unsubscribe_youtube(token):
 
 @app.route("/load-youtube-library")
 def load_youtube_library():
-    youtube.load_videos()
-    return make_response(r.smembers("VIDEO-LIBRARY"), 201)
+    data = youtube.load_videos()
+    video_list = []
+    for x in data:
+        video_list.append(x)
+    return make_response(jsonify(video_list), 201)
 
 @app.route("/youtube-library")
 def youtube_library():
-    return make_response(r.smembers("VIDEO-LIBRARY"), 201)
+    data = list(r.smembers("VIDEO-LIBRARY"))
+    video_list = []
+    for x in data:
+        video_list.append(x)
+    return make_response(jsonify(video_list), 201)
 
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():
