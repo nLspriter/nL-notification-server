@@ -11,10 +11,12 @@ import firebase_admin.messaging as messaging
 from functools import wraps
 from flask import request, Response
 
-auth = tweepy.OAuthHandler(os.getenv(
+auth = tweepy.OAuth2UserHandler(os.getenv(
     "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"))
 auth.set_access_token(os.getenv("TWITTER-ACCESS-TOKEN"),
                       os.getenv("TWITTER-ACCESS-SECRET"))
+
+client = tweepy.Client(os.getenv("TWITTER-BEARER-TOKEN"))
 
 BASE_URL = "https://fcm.googleapis.com"
 FCM_ENDPOINT = "v1/projects/{}/messages:send".format(
