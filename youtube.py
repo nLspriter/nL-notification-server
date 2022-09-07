@@ -200,17 +200,16 @@ def load_videos():
         for x in data:
             video_list.append(json.loads(x))
         for x in response["items"]:
-            if x["snippet"]["resourceId"]["videoId"] not in video_list:
-                videoDetails = {
-                    "id": x["snippet"]["resourceId"]["videoId"],
-                    "details": {
-                        "title": x["snippet"]["title"],
-                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
-                        "publishedAt": x["snippet"]["publishedAt"][:-1]
-                    }
+            videoDetails = {
+                "id": x["snippet"]["resourceId"]["videoId"],
+                "details": {
+                    "title": x["snippet"]["title"],
+                    "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
+                    "publishedAt": x["snippet"]["publishedAt"][:-1]
                 }
-                rdata = json.dumps(videoDetails)
-                print(rdata)
+            }
+            rdata = json.dumps(videoDetails)
+            if rdata not in r.smembers("VIDEO-LIBRARY"):
                 r.sadd("VIDEO-LIBRARY", rdata)
         if "nextPageToken" in response:
             pageToken = "&pageToken={}".format(response["nextPageToken"])
