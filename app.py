@@ -61,6 +61,7 @@ def load_data():
         "video_title": video_title,
         "video_id": video_id
     }
+    youtube.load_videos()
     return data
 
 @app.route("/post-twitch")
