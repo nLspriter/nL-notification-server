@@ -173,6 +173,7 @@ def webhook(request):
                 r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
+        load_videos()
         return make_response("success", 201)
     except Exception:
         send_discord_error(traceback.format_exc())
@@ -194,8 +195,12 @@ def load_videos():
         url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU5iCLgl2ccta5MqTf2VU8bQ&&key={}{}".format(
             os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
+        data = list(r.smembers("VIDEO-LIBRARY"))
+        video_list = []
+        for x in data:
+            video_list.append(json.loads(x))
         for x in response["items"]:
-            if x["snippet"]["resourceId"]["videoId"] not in r.smembers("VIDEOS-LIBRARY"):
+            if x["snippet"]["resourceId"]["videoId"] not in video_list:
                 videoDetails = {
                     "id": x["snippet"]["resourceId"]["videoId"],
                     "details": {
