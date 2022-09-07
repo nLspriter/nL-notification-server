@@ -10,7 +10,7 @@ def send_tweet(tweet):
     api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_with_media("thumbnail.jpg", status=tweet)
+            api.update_status_with_media("thumbnail.jpg", status=tweet)
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
