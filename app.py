@@ -43,9 +43,13 @@ def load_data():
     try:
         stream_title = twitch_response["data"][0]["title"]
         stream_game = "[{}]".format(twitch_response["data"][0]["game_name"])
+        r.set("STREAM-TITLE", stream_title.rstrip())
+        r.set("STREAM-GAME", "[{}]".format(stream_game))
     except:
         stream_title = "Offline"
         stream_game = ""
+        r.set("STREAM-TITLE", "Offline")
+        r.set("STREAM-GAME", "")
     try:
         youtube_response = requests.get(
             "https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.getenv("YOUTUBE-CHANNEL-ID")))
@@ -53,6 +57,10 @@ def load_data():
         video_info = xml_dict["feed"]["entry"][0]
         video_title = video_info["title"]
         video_id = video_info["yt:videoId"]
+        video_published = video_info["published"]
+        r.set("LAST-VIDEO", video_id)
+        r.set("LAST-VIDEO-TITLE", video_title)
+        r.set("LAST-VIDEO-DATE", video_published)
     except:
         video_title = "No videos found"
         video_id = ""
