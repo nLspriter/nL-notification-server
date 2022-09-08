@@ -7,10 +7,8 @@ import traceback
 
 
 def send_tweet(tweet):
-    api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
-            print(client.get_me()["profile_image_url"])
             api.update_status_with_media(status=tweet, filename="thumbnail.jpg")
             print("Tweet sent")
         else:
@@ -20,11 +18,11 @@ def send_tweet(tweet):
 
 
 def send_discord(data):
-    api = tweepy.API(auth)
+    print(api.get_user())
 
     embed = {
         "username": os.getenv("USERNAME"),
-        "avatar_url": api.clie
+        "avatar_url": api.get_user()
     }
 
     url = data["link"]["@href"]
