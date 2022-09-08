@@ -11,22 +11,20 @@ def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
 
 def send_tweet(tweet):
-    api = tweepy.API(auth)
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_with_media("thumbnail.jpg", status=tweet)
+            api.update_status_with_media(status=tweet, filename="thumbnail.jpg")
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
-    except tweepy.TweepError as e:
+    except tweepy.TweepyException as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
-def send_discord(data):
-    api = tweepy.API(auth)
 
+def send_discord(data):
     embed = {
         "username": os.getenv("USERNAME"),
-        "avatar_url": api.me().profile_image_url
+        "avatar_url": api.get_user(user_id=None, screen_name=os.getenv("USERNAME")).profile_image_url
     }
 
     if os.path.exists("thumbnail.jpg"):

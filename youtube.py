@@ -18,11 +18,9 @@ def send_tweet(tweet):
 
 
 def send_discord(data):
-    print(api.get_user())
-
     embed = {
         "username": os.getenv("USERNAME"),
-        "avatar_url": api.get_user()
+        "avatar_url": api.get_user(user_id=None, screen_name=os.getenv("USERNAME")).profile_image_url
     }
 
     url = data["link"]["@href"]
