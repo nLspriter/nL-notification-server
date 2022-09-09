@@ -24,7 +24,6 @@ def status():
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     try:
-        send_discord_error(request)
         if type == "twitch":
             return twitch.webhook(request)
         elif type == "youtube":

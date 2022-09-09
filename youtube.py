@@ -114,7 +114,6 @@ def send_browser(data):
 def webhook(request):
     try:
         challenge = request.args.get("hub.challenge")
-        send_discord_error(challenge)
 
         if challenge:
             return make_response(challenge, 201)
