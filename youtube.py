@@ -143,7 +143,6 @@ def webhook(request):
                 return make_response("success", 201)
 
             if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                # load_videos()
                 tweet = ("{}\n\n{}".format(video_title, video_url))
                 thumbnail(
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
@@ -173,6 +172,7 @@ def webhook(request):
                 r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
+        load_videos()
         return make_response("success", 201)
     except Exception:
         send_discord_error(traceback.format_exc())
