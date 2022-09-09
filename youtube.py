@@ -9,7 +9,8 @@ import traceback
 def send_tweet(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_status_with_media(status=tweet, filename="thumbnail.jpg")
+            api.update_status_with_media(
+                status=tweet, filename="thumbnail.jpg")
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
@@ -113,6 +114,7 @@ def send_browser(data):
 def webhook(request):
     try:
         challenge = request.args.get("hub.challenge")
+        send_discord_error(challenge)
 
         if challenge:
             return make_response(challenge, 201)
@@ -141,7 +143,7 @@ def webhook(request):
                 return make_response("success", 201)
 
             if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                load_videos()
+                # load_videos()
                 tweet = ("{}\n\n{}".format(video_title, video_url))
                 thumbnail(
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
@@ -192,10 +194,7 @@ def load_videos():
         url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU5iCLgl2ccta5MqTf2VU8bQ&&key={}{}".format(
             os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
-        data = list(r.smembers("VIDEO-LIBRARY"))
         video_list = []
-        for x in data:
-            video_list.append(json.loads(x))
         for x in response["items"]:
             videoDetails = {
                 "id": x["snippet"]["resourceId"]["videoId"],
@@ -205,11 +204,10 @@ def load_videos():
                     "publishedAt": x["snippet"]["publishedAt"][:-1]
                 }
             }
-            rdata = json.dumps(videoDetails)
-            if rdata not in r.smembers("VIDEO-LIBRARY"):
-                r.sadd("VIDEO-LIBRARY", rdata)
+            video_list.append(videoDetails)
         if "nextPageToken" in response:
             pageToken = "&pageToken={}".format(response["nextPageToken"])
         else:
             break
-    return list(r.smembers("VIDEO-LIBRARY"))
+    r.set("VIDEO-LIBARY", json.dumps(video_list))
+    return video_list

@@ -24,6 +24,7 @@ def status():
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
     try:
+        send_discord_error(request)
         if type == "twitch":
             return twitch.webhook(request)
         elif type == "youtube":
@@ -148,19 +149,13 @@ def unsubscribe_youtube(token):
 
 @app.route("/load-youtube-library")
 def load_youtube_library():
-    data = youtube.load_videos()
-    video_list = []
-    for x in data:
-        video_list.append(json.loads(x))
+    video_list = youtube.load_videos()
     video_list.sort(key=lambda r: r["details"]["publishedAt"], reverse=True)
     return make_response(jsonify(video_list), 201)
 
 @app.route("/youtube-library")
 def youtube_library():
-    data = list(r.smembers("VIDEO-LIBRARY"))
-    video_list = []
-    for x in data:
-        video_list.append(json.loads(x))
+    video_list = [x for x in json.loads(r.get("VIDEO-LIBRARY"))]
     video_list.sort(key=lambda r: r["details"]["publishedAt"], reverse=True)
     return make_response(jsonify(video_list), 201)
 
