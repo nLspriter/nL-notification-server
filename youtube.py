@@ -190,11 +190,11 @@ def comparedate(newdate, lastdate):
 
 def load_videos():
     pageToken = ""
+    video_list = []
     while True:
         url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU5iCLgl2ccta5MqTf2VU8bQ&&key={}{}".format(
             os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
-        video_list = []
         for x in response["items"]:
             videoDetails = {
                 "id": x["snippet"]["resourceId"]["videoId"],
