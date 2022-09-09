@@ -128,9 +128,8 @@ def webhook(request):
             video_id = video_info["yt:videoId"]
             video_published = video_info["published"]
 
-            url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet&key={}&id={}".format(
-                os.getenv("YOUTUBE-API-KEY"), video_id)
-            response = requests.get(url).json()
+            response = requests.get("https://youtube.googleapis.com/youtube/v3/videos?part=snippet&key={}&id={}".format(
+                os.getenv("YOUTUBE-API-KEY"), video_id)).json()
 
             if video_id not in r.smembers("VIDEOS-POSTED"):
                 if response["items"][0]["snippet"]["liveBroadcastContent"].lower() != "upcoming":
