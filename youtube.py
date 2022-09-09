@@ -209,5 +209,5 @@ def load_videos():
             pageToken = "&pageToken={}".format(response["nextPageToken"])
         else:
             break
-    r.set("VIDEO-LIBARY", json.dumps(video_list))
+    r.set("VIDEO-LIBRARY", json.dumps(video_list))
     return video_list
