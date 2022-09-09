@@ -44,7 +44,7 @@ def load_data():
         stream_title = twitch_response["data"][0]["title"]
         stream_game = "[{}]".format(twitch_response["data"][0]["game_name"])
         r.set("STREAM-TITLE", stream_title.rstrip())
-        r.set("STREAM-GAME", "[{}]".format(stream_game))
+        r.set("STREAM-GAME", "{}".format(stream_game))
     except:
         stream_title = "Offline"
         stream_game = ""
