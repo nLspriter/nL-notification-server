@@ -53,7 +53,7 @@ def load_data():
         r.set("STREAM-GAME", "")
     try:
         youtube_response = requests.get(
-            "https://www.youtube.com/feeds/videos.xml?channel_id={}".format(os.getenv("YOUTUBE-CHANNEL-ID")))
+            "https://www.youtube.com/feeds/videos.xml?channel_id=UC{}".format(os.getenv("YOUTUBE-ID")))
         xml_dict = xmltodict.parse(youtube_response.content)
         video_info = xml_dict["feed"]["entry"][0]
         video_title = video_info["title"]
@@ -103,8 +103,8 @@ def post_twitch():
 
 @app.route("/post-youtube")
 def post_youtube():
-    req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(
-        os.getenv("YOUTUBE-CHANNEL-ID")))
+    req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC{}".format(
+        os.getenv("YOUTUBE-ID")))
     xml_dict = xmltodict.parse(req.content)
     try:
         video_info = xml_dict["feed"]["entry"][0]

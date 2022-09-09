@@ -157,8 +157,8 @@ def webhook(request):
         except KeyError:
             print("Video deleted, retrieving last video from channel")
             try:
-                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id={}".format(
-                    os.getenv("YOUTUBE-CHANNEL-ID")))
+                req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC{}".format(
+                    os.getenv("YOUTUBE-ID")))
                 xml_dict = xmltodict.parse(req.content)
                 video_info = xml_dict["feed"]["entry"][0]
                 video_id = video_info["yt:videoId"]
@@ -192,8 +192,8 @@ def load_videos():
     pageToken = ""
     video_list = []
     while True:
-        url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU5iCLgl2ccta5MqTf2VU8bQ&&key={}{}".format(
-            os.getenv("YOUTUBE-API-KEY"), pageToken)
+        url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU{}&&key={}{}".format(
+            os.getenv("YOUTUBE-ID"), os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
         for x in response["items"]:
             videoDetails = {
