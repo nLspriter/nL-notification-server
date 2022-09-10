@@ -148,10 +148,10 @@ def webhook(request):
                 send_discord(video_info)
                 send_mobile(video_info)
                 send_browser(video_info)
+                load_videos()
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
                 r.set("LAST-VIDEO-DATE", video_published)
-
         except KeyError:
             print("Video deleted, retrieving last video from channel")
             try:
@@ -162,6 +162,7 @@ def webhook(request):
                 video_id = video_info["yt:videoId"]
                 video_title = video_info["title"]
                 video_published = video_info["published"]
+                load_videos()
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
                 r.set("LAST-VIDEO-DATE", video_published)
@@ -170,7 +171,6 @@ def webhook(request):
                 r.set("LAST-VIDEO", "None")
         if os.path.exists("thumbnail.jpg"):
             os.remove("thumbnail.jpg")
-        load_videos()
         return make_response("success", 201)
     except Exception:
         send_discord_error(traceback.format_exc())
