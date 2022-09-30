@@ -10,10 +10,12 @@ import traceback
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
 
-def send_tweet(tweet):
+def send_tweet(tweet, twitch_url):
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_status_with_media(status=tweet, filename="thumbnail.jpg")
+            tweet = api.update_status_with_media(
+                status=tweet, filename="thumbnail.jpg")
+            api.update_status(status=twitch_url, in_reply_to_status_id=tweet.id)
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
@@ -190,14 +192,14 @@ def webhook(request):
                         stream_title = response["data"][0]["title"]
                         stream_game = response["data"][0]["game_name"]
                     if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
-                        tweet = "{} [{}]\n\n{}".format(
-                            stream_title, stream_game, twitch_url)
+                        tweet = "🔴LIVE NOW\n\n{} [{}]".format(
+                            stream_title, stream_game)
                         r.set("STREAM-TITLE", stream_title.rstrip())
                         r.set("STREAM-GAME", "[{}]".format(stream_game))
                         print(r.get("STREAM-TITLE"))
                         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                             os.getenv("USERNAME").lower()))
-                        send_tweet(tweet)
+                        send_tweet(tweet, twitch_url)
                         send_discord(response["data"][0])
                         send_mobile()
                         send_browser()

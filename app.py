@@ -27,6 +27,7 @@ def webhook(type):
         if type == "twitch":
             return twitch.webhook(request)
         elif type == "youtube":
+            youtube.load_videos()
             return youtube.webhook(request)
     except Exception:
         send_discord_error(traceback.format_exc())

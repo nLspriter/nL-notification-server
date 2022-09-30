@@ -6,11 +6,12 @@ from datetime import datetime
 import traceback
 
 
-def send_tweet(tweet):
+def send_tweet(tweet, video_url):
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_status_with_media(
+            tweet = api.update_status_with_media(
                 status=tweet, filename="thumbnail.jpg")
+            api.update_status(status=video_url, in_reply_to_status_id=tweet.id)
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
@@ -141,14 +142,13 @@ def webhook(request):
                 return make_response("success", 201)
 
             if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                tweet = ("{}\n\n{}".format(video_title, video_url))
+                tweet = ("⚠ NEW VIDEO ⚠\n\n{}".format(video_title))
                 thumbnail(
                     "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                send_tweet(tweet)
+                send_tweet(tweet, video_url)
                 send_discord(video_info)
                 send_mobile(video_info)
                 send_browser(video_info)
-                load_videos()
                 r.set("LAST-VIDEO", video_id)
                 r.set("LAST-VIDEO-TITLE", video_title)
                 r.set("LAST-VIDEO-DATE", video_published)
