@@ -196,19 +196,19 @@ def load_videos():
         for x in playlist_response["items"]:
             if "twitch.tv/newlegacyinc" not in x["snippet"]["title"].lower():
                 id_list.append(x["snippet"]["resourceId"]["videoId"])
-            video_url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={}&key={}".format(
-                "%2C".join(id_list), os.getenv("YOUTUBE-API-KEY"))
-            video_response = requests.get(video_url).json()
-            for y in video_response["items"]:
-                videoDetails = {
-                    "id": y["id"],
-                    "details": {
-                        "title": y["snippet"]["title"],
-                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(y["id"]),
-                        "publishedAt": y["snippet"]["publishedAt"][:-1]
-                    }
+        video_url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={}&key={}".format(
+            "%2C".join(id_list), os.getenv("YOUTUBE-API-KEY"))
+        video_response = requests.get(video_url).json()
+        for y in video_response["items"]:
+            videoDetails = {
+                "id": y["id"],
+                "details": {
+                    "title": y["snippet"]["title"],
+                    "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(y["id"]),
+                    "publishedAt": y["snippet"]["publishedAt"][:-1]
                 }
-                video_list.append(videoDetails)
+            }
+            video_list.append(videoDetails)
         if "nextPageToken" in playlist_response:
             pageToken = "&pageToken={}".format(playlist_response["nextPageToken"])
         else:
