@@ -205,7 +205,8 @@ def load_videos():
                 "details": {
                     "title": y["snippet"]["title"],
                     "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(y["id"]),
-                    "publishedAt": y["snippet"]["publishedAt"][:-1]
+                    "publishedAt": y["snippet"]["publishedAt"][:-1],
+                    "duration": y["contentDetails"]["duration"]
                 }
             }
             video_list.append(videoDetails)
