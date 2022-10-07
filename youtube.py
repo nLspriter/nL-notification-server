@@ -193,15 +193,16 @@ def load_videos():
             os.getenv("YOUTUBE-ID"), os.getenv("YOUTUBE-API-KEY"), pageToken)
         response = requests.get(url).json()
         for x in response["items"]:
-            videoDetails = {
-                "id": x["snippet"]["resourceId"]["videoId"],
-                "details": {
-                    "title": x["snippet"]["title"],
-                    "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
-                    "publishedAt": x["snippet"]["publishedAt"][:-1]
+            if "twitch.tv/newlegacyinc" not in x["snippet"]["title"].lower():
+                videoDetails = {
+                    "id": x["snippet"]["resourceId"]["videoId"],
+                    "details": {
+                        "title": x["snippet"]["title"],
+                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
+                        "publishedAt": x["snippet"]["publishedAt"][:-1]
+                    }
                 }
-            }
-            video_list.append(videoDetails)
+                video_list.append(videoDetails)
         if "nextPageToken" in response:
             pageToken = "&pageToken={}".format(response["nextPageToken"])
         else:
