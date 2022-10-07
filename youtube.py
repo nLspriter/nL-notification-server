@@ -189,22 +189,28 @@ def load_videos():
     pageToken = ""
     video_list = []
     while True:
-        url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU{}&&key={}{}".format(
+        id_list = []
+        playlist_url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU{}&&key={}{}".format(
             os.getenv("YOUTUBE-ID"), os.getenv("YOUTUBE-API-KEY"), pageToken)
-        response = requests.get(url).json()
-        for x in response["items"]:
+        playlist_response = requests.get(playlist_url).json()
+        for x in playlist_response["items"]:
             if "twitch.tv/newlegacyinc" not in x["snippet"]["title"].lower():
+                id_list.append(x["snippet"]["resourceId"]["videoId"])
+            video_url = "https://youtube.googleapis.com/youtube/v3/videos?part=snippet%2CcontentDetails%2Cstatistics&id={}&key={}".format(
+                "%2C".join(id_list), os.getenv("YOUTUBE-API-KEY"))
+            video_response = requests.get(video_url).json()
+            for y in video_response["items"]:
                 videoDetails = {
-                    "id": x["snippet"]["resourceId"]["videoId"],
+                    "id": y["id"],
                     "details": {
-                        "title": x["snippet"]["title"],
-                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(x["snippet"]["resourceId"]["videoId"]),
-                        "publishedAt": x["snippet"]["publishedAt"][:-1]
+                        "title": y["snippet"]["title"],
+                        "thumbnail": "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(y["id"]),
+                        "publishedAt": y["snippet"]["publishedAt"][:-1]
                     }
                 }
                 video_list.append(videoDetails)
-        if "nextPageToken" in response:
-            pageToken = "&pageToken={}".format(response["nextPageToken"])
+        if "nextPageToken" in playlist_response:
+            pageToken = "&pageToken={}".format(playlist_response["nextPageToken"])
         else:
             break
     r.set("VIDEO-LIBRARY", json.dumps(video_list))
