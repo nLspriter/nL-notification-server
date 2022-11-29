@@ -140,17 +140,18 @@ def webhook(request):
                 print("Video already posted")
                 return make_response("success", 201)
 
-            if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
-                tweet = ("{}\n\n{}".format(video_title, video_url))
-                thumbnail(
-                    "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                send_tweet(tweet)
-                send_discord(video_info)
-                send_mobile(video_info)
-                send_browser(video_info)
-                r.set("LAST-VIDEO", video_id)
-                r.set("LAST-VIDEO-TITLE", video_title)
-                r.set("LAST-VIDEO-DATE", video_published)
+            if not is_short(video_id):
+                if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
+                    tweet = ("{}\n\n{}".format(video_title, video_url))
+                    thumbnail(
+                        "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
+                    send_tweet(tweet)
+                    send_discord(video_info)
+                    send_mobile(video_info)
+                    send_browser(video_info)
+                    r.set("LAST-VIDEO", video_id)
+                    r.set("LAST-VIDEO-TITLE", video_title)
+                    r.set("LAST-VIDEO-DATE", video_published)
         except KeyError:
             print("Video deleted, retrieving last video from channel")
             try:
@@ -184,13 +185,20 @@ def comparedate(newdate, lastdate):
     else:
         return False
 
+def is_short(vid):
+    url = 'https://www.youtube.com/shorts/' + vid
+    ret = requests.head(url)
+    if ret.status_code == 200:
+        return True
+    else: # whether 303 or other values, it's not short
+        return False
 
 def load_videos():
     pageToken = ""
     video_list = []
     while True:
         id_list = []
-        playlist_url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU{}&&key={}{}".format(
+        playlist_url = "https://youtube.googleapis.com/youtube/v3/playlistItems?part=snippet&maxResults=50&playlistId=UU{}&key={}{}".format(
             os.getenv("YOUTUBE-ID"), os.getenv("YOUTUBE-API-KEY"), pageToken)
         playlist_response = requests.get(playlist_url).json()
         for x in playlist_response["items"]:
