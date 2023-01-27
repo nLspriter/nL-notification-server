@@ -14,8 +14,12 @@ app.config["REDIS_URL"] = os.getenv("REDIS_URL")
 
 @app.route("/status", methods=["GET"])
 def status():
+    if (r.get("STREAM-STATUS") == "stream.offline"):
+        stream_status = "Offline"
+    else:
+        stream_status = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     data = {
-        "stream_status": "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME")),
+        "stream_status": stream_status,
         "video_id": r.get("LAST-VIDEO"),
         "video_title": r.get("LAST-VIDEO-TITLE")
     }

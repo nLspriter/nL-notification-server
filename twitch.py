@@ -7,13 +7,16 @@ import hmac
 import hashlib
 import traceback
 
+
 def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
+
 
 def send_tweet(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
-            api.update_status_with_media(status=tweet, filename="thumbnail.jpg")
+            api.update_status_with_media(
+                status=tweet, filename="thumbnail.jpg")
             print("Tweet sent")
         else:
             api.update_status(status=tweet)
@@ -54,7 +57,7 @@ def send_discord(data):
     ]
 
     embed["content"] = content
-    for count in range(5):
+    for _ in range(5):
         result = requests.post(os.getenv("DISCORD-WEBHOOK-URL"), json=embed)
         if result.status_code == 204:
             break
@@ -64,6 +67,7 @@ def send_discord(data):
         print(err)
     else:
         print("Discord Notification Sent, code {}.".format(result.status_code))
+
 
 def send_mobile():
     access_token_info = credentials.get_access_token()
@@ -105,6 +109,7 @@ def send_mobile():
         print("Unable to send message to Firebase")
         print(resp.text)
 
+
 def send_browser():
     access_token_info = credentials.get_access_token()
     headers = {
@@ -136,6 +141,7 @@ def send_browser():
         print("Unable to send message to Firebase")
         print(resp.text)
 
+
 def webhook(request):
     try:
         headers = request.headers
@@ -155,56 +161,51 @@ def webhook(request):
             expected_signature = "sha256=" + signature.hexdigest()
 
             if headers["Twitch-Eventsub-Message-Signature"] != expected_signature:
-                print("Signature Mismatch")
                 return make_response("failed", 403)
-            else:
-                print("Signature Match")
-                print(request.json["subscription"]["type"])
 
-                if "stream" in request.json["subscription"]["type"]:
-                    r.set("STREAM-STATUS",
-                            request.json["subscription"]["type"])
+            if "stream" in request.json["subscription"]["type"]:
+                r.set("STREAM-STATUS",
+                      request.json["subscription"]["type"])
 
-                if r.get("STREAM-STATUS") == "stream.online":
-                    if "id" in request.json["event"]:
-                        if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
-                            r.sadd("STREAM-POSTED",
-                                    request.json["event"]["id"])
-                        else:
-                            print("Stream already posted")
-                            return make_response("success", 201)
-                    url = "https://api.twitch.tv/helix/streams?user_login={}".format(
-                        os.getenv("USERNAME").lower())
-                    request_header = {
-                        "Authorization": "Bearer {}".format(os.getenv("TWITCH-AUTHORIZATION")),
-                        "Client-ID": os.getenv("TWITCH-CLIENT-ID")
-                    }
-                    response = requests.get(url, headers=request_header).json()
-                    twitch_url = "https://www.twitch.tv/{}/".format(
-                        os.getenv("USERNAME").lower())
-
-                    if request.json["subscription"]["type"] == "channel.update":
-                        stream_title = request.json["event"]["title"]
-                        stream_game = request.json["event"]["category_name"]
+            if r.get("STREAM-STATUS") == "stream.online":
+                if "id" in request.json["event"]:
+                    if request.json["event"]["id"] not in r.smembers("STREAM-POSTED"):
+                        r.sadd("STREAM-POSTED",
+                               request.json["event"]["id"])
                     else:
-                        stream_title = response["data"][0]["title"]
-                        stream_game = response["data"][0]["game_name"]
+                        return make_response("success", 201)
+                url = "https://api.twitch.tv/helix/streams?user_login={}".format(
+                    os.getenv("USERNAME").lower())
+                request_header = {
+                    "Authorization": "Bearer {}".format(os.getenv("TWITCH-AUTHORIZATION")),
+                    "Client-ID": os.getenv("TWITCH-CLIENT-ID")
+                }
+                response = requests.get(url, headers=request_header).json()
+                twitch_url = "https://www.twitch.tv/{}/".format(
+                    os.getenv("USERNAME").lower())
+
+                if request.json["subscription"]["type"] == "channel.update":
+                    r.set("STREAM-TITLE",
+                          request.json["event"]["title"].rstrip())
+                    stream_game = request.json["event"]["category_name"]
                     if (r.get("STREAM-GAME") != "[{}]".format(stream_game)):
-                        tweet = "{} [{}]\n\n{}".format(
-                            stream_title, stream_game, twitch_url)
-                        r.set("STREAM-TITLE", stream_title.rstrip())
                         r.set("STREAM-GAME", "[{}]".format(stream_game))
-                        print(r.get("STREAM-TITLE"))
-                        thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
-                            os.getenv("USERNAME").lower()))
-                        send_tweet(tweet)
-                        send_discord(response["data"][0])
-                        send_mobile()
-                        send_browser()
-                else:
-                    r.set("STREAM-TITLE", "Offline")
-                    r.set("STREAM-GAME", "")
+                    else:
+                        return make_response("success", 201)
+                tweet = "{} [{}]\n\n{}".format(
+                    r.get("STREAM-TITLE"), r.get("STREAM-GAME"), twitch_url)
+                thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
+                    os.getenv("USERNAME").lower()))
+                send_tweet(tweet)
+                send_discord(response["data"][0])
+                send_mobile()
+                send_browser()
+            else:
+                if request.json["subscription"]["type"] == "channel.update":
+                    r.set(
+                        "STREAM-TITLE", request.json["event"]["title"].rstrip())
+                    r.set(
+                        "STREAM-GAME", "[{}]".format(request.json["event"]["category_name"]))
             return make_response("success", 201)
     except Exception:
         send_discord_error(traceback.format_exc())
-
