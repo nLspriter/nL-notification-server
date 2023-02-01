@@ -192,7 +192,7 @@ def webhook(request):
                         r.set("STREAM-GAME", "[{}]".format(stream_game))
                     else:
                         return make_response("success", 201)
-                tweet = "{} [{}]\n\n{}".format(
+                tweet = "{} {}\n\n{}".format(
                     r.get("STREAM-TITLE"), r.get("STREAM-GAME"), twitch_url)
                 thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                     os.getenv("USERNAME").lower()))
