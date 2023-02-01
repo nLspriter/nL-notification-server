@@ -24,15 +24,15 @@ def send_tweet(tweet):
         print("Tweet could not be sent\n{}".format(e.api_code))
 
 
-def send_discord(data):
+def send_discord():
     embed = {
         "username": os.getenv("USERNAME"),
         "avatar_url": api.get_user(user_id=None, screen_name=os.getenv("USERNAME")).profile_image_url
     }
 
     if os.path.exists("thumbnail.jpg"):
-        thumbnail = rnd(data["thumbnail_url"].format(
-            width=400, height=225))
+        thumbnail = rnd("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}-{}x{}.jpg".format(
+                    os.getenv("USERNAME").lower(), width=400, height=225))
     else:
         thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 
@@ -197,7 +197,7 @@ def webhook(request):
                 thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                     os.getenv("USERNAME").lower()))
                 send_tweet(tweet)
-                send_discord(response["data"][0])
+                send_discord()
                 send_mobile()
                 send_browser()
             else:
