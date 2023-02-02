@@ -31,8 +31,8 @@ def send_discord():
     }
 
     if os.path.exists("thumbnail.jpg"):
-        thumbnail = rnd("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}-{}x{}.jpg".format(
-                    os.getenv("USERNAME").lower(), width=400, height=225))
+        thumbnail = rnd("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}-400x225.jpg".format(
+                    os.getenv("USERNAME").lower()))
     else:
         thumbnail = "https://static-cdn.jtvnw.net/ttv-static/404_preview-400x225.jpg"
 

@@ -97,7 +97,7 @@ def post_twitch():
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
             os.getenv("USERNAME").lower()))
         twitch.send_tweet(tweet)
-        twitch.send_discord(response["data"][0])
+        twitch.send_discord()
         twitch.send_mobile()
         twitch.send_browser()
     except Exception:
