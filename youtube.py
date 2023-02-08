@@ -145,7 +145,7 @@ def webhook(request):
                     tweet = ("{}\n\n{}".format(video_title, video_url))
                     thumbnail(
                         "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                    send_tweet(tweet)
+                    # send_tweet(tweet)
                     send_discord(video_info)
                     send_mobile(video_info)
                     send_browser(video_info)

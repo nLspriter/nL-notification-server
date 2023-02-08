@@ -196,7 +196,7 @@ def webhook(request):
                     r.get("STREAM-TITLE"), r.get("STREAM-GAME"), twitch_url)
                 thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                     os.getenv("USERNAME").lower()))
-                send_tweet(tweet)
+                # send_tweet(tweet)
                 send_discord()
                 send_mobile()
                 send_browser()

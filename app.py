@@ -96,7 +96,7 @@ def post_twitch():
         r.set("STREAM-GAME", "[{}]".format(stream_game))
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
             os.getenv("USERNAME").lower()))
-        twitch.send_tweet(tweet)
+        # twitch.send_tweet(tweet)
         twitch.send_discord()
         twitch.send_mobile()
         twitch.send_browser()
@@ -118,7 +118,7 @@ def post_youtube():
         video_published = video_info["published"]
         tweet = ("{}\n\n{}".format(video_title, video_url))
         thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-        youtube.send_tweet(tweet)
+        # youtube.send_tweet(tweet)
         youtube.send_discord(video_info)
         youtube.send_mobile(video_info)
         youtube.send_browser(video_info)
