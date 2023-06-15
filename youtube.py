@@ -21,7 +21,7 @@ def send_tweet(tweet):
 def send_discord(data):
     embed = {
         "username": os.getenv("USERNAME"),
-        "avatar_url": api.get_user(user_id=None, screen_name=os.getenv("USERNAME")).profile_image_url
+        "avatar_url": "https://newlegacyinc.tv/nL%20Logo.png"
     }
 
     url = data["link"]["@href"]
