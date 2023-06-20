@@ -5,5 +5,5 @@ opencv_python==4.5.5.62
 python-dotenv==0.20.0
 redis==4.0.2
 requests==2.27.1
-tweepy==4.10.1
+tweepy==4.14.0
 xmltodict==0.12.0
