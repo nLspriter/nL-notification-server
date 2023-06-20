@@ -11,7 +11,10 @@ import firebase_admin.messaging as messaging
 from functools import wraps
 from flask import request, Response
 
-auth = tweepy.Client(os.getenv(
+auth = tweepy.OAuth1UserHandler(os.getenv(
+    "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"), os.getenv("TWITTER-ACCESS-TOKEN"),
+    os.getenv("TWITTER-ACCESS-SECRET"))
+client = tweepy.Client(os.getenv(
     "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"), os.getenv("TWITTER-ACCESS-TOKEN"),
     os.getenv("TWITTER-ACCESS-SECRET"))
 api = tweepy.API(auth)
