@@ -12,18 +12,21 @@ import traceback
 app = Flask(__name__)
 app.config["REDIS_URL"] = os.getenv("REDIS_URL")
 
+
 @app.route("/status", methods=["GET"])
 def status():
     if (r.get("STREAM-STATUS") == "stream.offline"):
         stream_status = "Offline"
     else:
-        stream_status = "{} {}".format(r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
+        stream_status = "{} {}".format(
+            r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
     data = {
         "stream_status": stream_status,
         "video_id": r.get("LAST-VIDEO"),
         "video_title": r.get("LAST-VIDEO-TITLE")
     }
     return make_response(data, 201)
+
 
 @app.route("/webhook/<type>", methods=["GET", "POST"])
 def webhook(type):
@@ -35,6 +38,7 @@ def webhook(type):
             return youtube.webhook(request)
     except Exception:
         send_discord_error(traceback.format_exc())
+
 
 @app.route("/data")
 def load_data():
@@ -77,6 +81,7 @@ def load_data():
     youtube.load_videos()
     return data
 
+
 @app.route("/post-twitch")
 def post_twitch():
     twitch_url = "https://api.twitch.tv/helix/streams?user_login={}".format(
@@ -96,17 +101,26 @@ def post_twitch():
         r.set("STREAM-GAME", "[{}]".format(stream_game))
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
             os.getenv("USERNAME").lower()))
-        # twitch.send_tweet(tweet)
-        twitch.send_discord()
-        twitch.send_mobile()
-        twitch.send_browser()
+        match type:
+            case "twitter":
+                twitch.send_tweet(tweet)
+            case "discord":
+                twitch.send_discord()
+            case "app":
+                twitch.send_mobile()
+                twitch.send_browser()
+            case _:
+                twitch.send_tweet(tweet)
+                twitch.send_discord()
+                twitch.send_mobile()
+                twitch.send_browser()
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
 
 
-@app.route("/post-youtube")
-def post_youtube():
+@app.route("/post-youtube/<type>")
+def post_youtube(type):
     req = requests.get("https://www.youtube.com/feeds/videos.xml?channel_id=UC{}".format(
         os.getenv("YOUTUBE-ID")))
     xml_dict = xmltodict.parse(req.content)
@@ -117,39 +131,54 @@ def post_youtube():
         video_title = video_info["title"]
         video_published = video_info["published"]
         tweet = ("{}\n\n{}".format(video_title, video_url))
-        thumbnail("https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-        # youtube.send_tweet(tweet)
-        youtube.send_discord(video_info)
-        youtube.send_mobile(video_info)
-        youtube.send_browser(video_info)
-        r.set("LAST-VIDEO", video_id)
-        r.set("LAST-VIDEO-TITLE", video_title)
-        r.set("LAST-VIDEO-DATE", video_published)
-        if video_id not in r.smembers("VIDEOS-POSTED"):
-            r.sadd("VIDEOS-POSTED", video_id)
+        thumbnail(
+            "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
+        match type:
+            case "twitter":
+                youtube.send_tweet(tweet)
+            case "discord":
+                youtube.send_discord(video_info)
+            case "app":
+                youtube.send_mobile(video_info)
+                youtube.send_browser(video_info)
+            case _:
+                youtube.send_tweet(tweet)
+                youtube.send_discord(video_info)
+                youtube.send_mobile(video_info)
+                youtube.send_browser(video_info)
+        # r.set("LAST-VIDEO", video_id)
+        # r.set("LAST-VIDEO-TITLE", video_title)
+        # r.set("LAST-VIDEO-DATE", video_published)
+        # if video_id not in r.smembers("VIDEOS-POSTED"):
+        #     r.sadd("VIDEOS-POSTED", video_id)
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
+
 
 @app.route("/subscribe-twitch/<token>", methods=["POST"])
 def subscribe_twitch(token):
     subscribe_topic("twitch-browser", token)
     return make_response("success", 201)
 
+
 @app.route("/unsubscribe-twitch/<token>", methods=["POST"])
 def unsubscribe_twitch(token):
     unsubscribe_topic("twitch-browser", token)
     return make_response("success", 201)
+
 
 @app.route("/subscribe-youtube/<token>", methods=["POST"])
 def subscribe_youtube(token):
     subscribe_topic("youtube-browser", token)
     return make_response("success", 201)
 
+
 @app.route("/unsubscribe-youtube/<token>", methods=["POST"])
 def unsubscribe_youtube(token):
     unsubscribe_topic("youtube-browser", token)
     return make_response("success", 201)
+
 
 @app.route("/load-youtube-library")
 def load_youtube_library():
@@ -157,11 +186,13 @@ def load_youtube_library():
     video_list.sort(key=lambda r: r["details"]["publishedAt"], reverse=True)
     return make_response(jsonify(video_list), 201)
 
+
 @app.route("/youtube-library")
 def youtube_library():
     video_list = [x for x in json.loads(r.get("VIDEO-LIBRARY"))]
     video_list.sort(key=lambda r: r["details"]["publishedAt"], reverse=True)
     return make_response(jsonify(video_list), 201)
+
 
 @app.route("/trigger", methods=["GET", "POST"])
 def trigger():
@@ -172,6 +203,7 @@ def trigger():
         else:
             yield "data: {}\nevent: null\n\n"
     return Response(respond(), mimetype='text/event-stream')
+
 
 @app.route("/notifications")
 @requires_auth
@@ -194,6 +226,7 @@ def overlay():
 @app.route("/")
 def home():
     return render_template("home.html")
+
 
 if __name__ == "__main__":
     app.run(ssl_context="adhoc", debug=True, port=443)

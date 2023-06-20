@@ -38,6 +38,66 @@
         return false;
       });
     });</script>
+
+  <script type="text/javascript">
+    $(function () {
+      $('#post-twitch-twitter').on('click', function (e) {
+        $.getJSON('/post-twitch/twitter',
+          function (data) {
+          });
+        return false;
+      });
+    });</script>
+
+  <script type="text/javascript">
+    $(function () {
+      $('#post-youtube-twitter').on('click', function (e) {
+        $.getJSON('/post-youtube/twitter',
+          function (data) {
+          });
+        return false;
+      });
+    });</script>
+
+<script type="text/javascript">
+  $(function () {
+    $('#post-twitch-discord').on('click', function (e) {
+      $.getJSON('/post-twitch/discord',
+        function (data) {
+        });
+      return false;
+    });
+  });</script>
+
+<script type="text/javascript">
+  $(function () {
+    $('#post-youtube-discord').on('click', function (e) {
+      $.getJSON('/post-youtube/discord',
+        function (data) {
+        });
+      return false;
+    });
+  });</script>
+
+<script type="text/javascript">
+  $(function () {
+    $('#post-twitch-firebase').on('click', function (e) {
+      $.getJSON('/post-twitch/firebase',
+        function (data) {
+        });
+      return false;
+    });
+  });</script>
+
+<script type="text/javascript">
+  $(function () {
+    $('#post-youtube-firebase').on('click', function (e) {
+      $.getJSON('/post-youtube/firebase',
+        function (data) {
+        });
+      return false;
+    });
+  });</script>
 </head>
 
 <body>
@@ -59,8 +119,16 @@
         <div><b>Youtube</b></div>
         <div id="youtube-data">{{ytitle}}</div>
         <div><input type="button" id="reload-data" value="Reload Data"></input></div>
-        <div><input type="button" id="post-twitch" value="Post Twitch"></input></div>
-        <div><input type="button" id="post-youtube" value="Post YouTube"></input></div>
+        <h3>Twitch</h3>
+        <div><input type="button" id="post-twitch" value="Post All"></input></div>
+        <div><input type="button" id="post-twitch-twitter" value="Post Twitter"></input></div>
+        <div><input type="button" id="post-twitch-discord" value="Post Discord"></input></div>
+        <div><input type="button" id="post-twitch-firebase" value="Post Firebase"></input></div>
+        <h3>Youtube</h3>
+        <div><input type="button" id="post-youtube" value="Post All"></input></div>
+        <div><input type="button" id="post-youtube-twitter" value="Post Twitter"></input></div>
+        <div><input type="button" id="post-youtube-discord" value="Post Discord"></input></div>
+        <div><input type="button" id="post-youtube-firebase" value="Post Firebase"></input></div>
       </div>
     </div>
   </div>

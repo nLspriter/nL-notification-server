@@ -9,6 +9,8 @@ import traceback
 def send_tweet(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
+            media = api.media_upload("thumbnail.jpg")
+            api.create_tweet(text=tweet, media_ids=media.media_id_string)
             api.update_status_with_media(
                 status=tweet, filename="thumbnail.jpg")
             print("Tweet sent")
