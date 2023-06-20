@@ -10,12 +10,15 @@ def send_tweet(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
             media = api.media_upload("thumbnail.jpg")
+            media_ids = [media.media_id]
             client.create_tweet(
-                text=tweet, media_ids=media.media_id_string
+                text=tweet, media_ids=media_ids
             )
             print("Tweet sent")
         else:
-            api.update_status(status=tweet)
+            client.create_tweet(
+                text=tweet
+            )
     except tweepy.TweepyException as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
