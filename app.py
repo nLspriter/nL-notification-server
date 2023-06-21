@@ -141,6 +141,8 @@ def post_youtube(type):
             case "app":
                 youtube.send_mobile(video_info)
                 youtube.send_browser(video_info)
+            case "instagram":
+                youtube.send_instagram(tweet)
             case _:
                 youtube.send_tweet(tweet)
                 youtube.send_discord(video_info)

@@ -4,6 +4,7 @@ import xmltodict
 from helper import *
 from datetime import datetime
 import traceback
+from instagrapi import Client as igc
 
 
 def send_tweet(tweet):
@@ -114,6 +115,18 @@ def send_browser(data):
     else:
         print("Unable to send message to Firebase")
         print(resp.text)
+
+def send_instagram(tweet):
+    try:
+        if os.path.exists("thumbnail.jpg"):
+            cl = igc()
+            cl.login("", "")
+            cl.photo_upload("thumbnail.jpg", tweet)
+            print("Tweet sent")
+        else:
+            print("Tweet could not be sent")
+    except tweepy.TweepyException as e:
+        print("Tweet could not be sent")
 
 
 def webhook(request):
