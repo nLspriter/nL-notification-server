@@ -123,7 +123,7 @@ def send_instagram(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
             cl = igc()
-            cl.login("canofspriteman", "5rWj6K2HczRpWbqE")
+            cl.login("", "")
             cl.photo_upload("thumbnail.jpg", tweet)
             print("Tweet sent")
         else:
