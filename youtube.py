@@ -12,9 +12,11 @@ def send_tweet(tweet):
         if os.path.exists("thumbnail.jpg"):
             media = api.media_upload("thumbnail.jpg")
             media_ids = [media.media_id]
-            client.create_tweet(
+            initial = client.create_tweet(
                 text=tweet, media_ids=media_ids
             )
+            reply = client.create_tweet(
+                text=tweet, in_reply_to_tweet_id=initial.data.id)
             print("Tweet sent")
         else:
             client.create_tweet(
@@ -116,11 +118,12 @@ def send_browser(data):
         print("Unable to send message to Firebase")
         print(resp.text)
 
+
 def send_instagram(tweet):
     try:
         if os.path.exists("thumbnail.jpg"):
             cl = igc()
-            cl.login("", "")
+            cl.login("canofspriteman", "5rWj6K2HczRpWbqE")
             cl.photo_upload("thumbnail.jpg", tweet)
             print("Tweet sent")
         else:
@@ -203,13 +206,15 @@ def comparedate(newdate, lastdate):
     else:
         return False
 
+
 def is_short(vid):
     url = 'https://www.youtube.com/shorts/' + vid
     ret = requests.head(url)
     if ret.status_code == 200:
         return True
-    else: # whether 303 or other values, it's not short
+    else:  # whether 303 or other values, it's not short
         return False
+
 
 def load_videos():
     pageToken = ""
@@ -237,7 +242,8 @@ def load_videos():
             }
             video_list.append(videoDetails)
         if "nextPageToken" in playlist_response:
-            pageToken = "&pageToken={}".format(playlist_response["nextPageToken"])
+            pageToken = "&pageToken={}".format(
+                playlist_response["nextPageToken"])
         else:
             break
     r.set("VIDEO-LIBRARY", json.dumps(video_list))

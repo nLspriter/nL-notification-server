@@ -3,3 +3,4 @@
 .env
 envvars*
 Procfile
+/venv
