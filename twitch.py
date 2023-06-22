@@ -12,19 +12,22 @@ def rnd(url):
     return url + "?rnd=" + "".join([choice(ascii_letters) for _ in range(6)])
 
 
-def send_tweet(tweet):
+def send_tweet(title, url):
     try:
         if os.path.exists("thumbnail.jpg"):
             media = api.media_upload("thumbnail.jpg")
             media_ids = [media.media_id]
-            client.create_tweet(
-                text=tweet, media_ids=media_ids
+            initial = client.create_tweet(
+                text="WE'RE LIVE!\n{}".format(title), media_ids=media_ids
             )
-            print("Tweet sent")
+            reply = client.create_tweet(
+                text=url, in_reply_to_tweet_id=initial.data["id"])
         else:
-            client.create_tweet(
-                text=tweet
-            )
+            initial = client.create_tweet(
+                text="WE'RE LIVE!\n{}".format(title))
+            reply = client.create_tweet(
+                text=url, in_reply_to_tweet_id=initial.data["id"])
+        print("Tweet sent")
     except tweepy.TweepyException as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
@@ -197,11 +200,11 @@ def webhook(request):
                         r.set("STREAM-GAME", "[{}]".format(stream_game))
                     else:
                         return make_response("success", 201)
-                tweet = "{} {}\n\n{}".format(
-                    r.get("STREAM-TITLE"), r.get("STREAM-GAME"), twitch_url)
+                tweet = "{} {}".format(
+                    r.get("STREAM-TITLE"), r.get("STREAM-GAME"))
                 thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
                     os.getenv("USERNAME").lower()))
-                send_tweet(tweet)
+                send_tweet(tweet, twitch_url)
                 send_discord()
                 send_mobile()
                 send_browser()

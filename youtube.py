@@ -4,24 +4,24 @@ import xmltodict
 from helper import *
 from datetime import datetime
 import traceback
-from instagrapi import Client as igc
 
 
-def send_tweet(tweet):
+def send_tweet(title, url):
     try:
         if os.path.exists("thumbnail.jpg"):
             media = api.media_upload("thumbnail.jpg")
             media_ids = [media.media_id]
             initial = client.create_tweet(
-                text=tweet, media_ids=media_ids
+                text="NEW VIDEO!\n{}".format(title), media_ids=media_ids
             )
             reply = client.create_tweet(
-                text=tweet, in_reply_to_tweet_id=initial.data.id)
-            print("Tweet sent")
+                text=url, in_reply_to_tweet_id=initial.data["id"])
         else:
-            client.create_tweet(
-                text=tweet
-            )
+            initial = client.create_tweet(
+                text="NEW VIDEO!\n{}".format(title))
+            reply = client.create_tweet(
+                text=url, in_reply_to_tweet_id=initial.data["id"])
+        print("Tweet sent")
     except tweepy.TweepyException as e:
         print("Tweet could not be sent\n{}".format(e.api_code))
 
@@ -119,17 +119,15 @@ def send_browser(data):
         print(resp.text)
 
 
-def send_instagram(tweet):
+def send_instagram(title):
     try:
         if os.path.exists("thumbnail.jpg"):
-            cl = igc()
-            cl.login("", "")
-            cl.photo_upload("thumbnail.jpg", tweet)
-            print("Tweet sent")
+            cl.photo_upload("thumbnail.jpg", "NEW VIDEO!\n{}\n\nLink is in our bio!\n\n#wwe #aew #wwegames #wweraw #wwesmackdown #aewdynamite #wcw #ecw".format(title))
+            print("Instagram Post made")
         else:
-            print("Tweet could not be sent")
-    except tweepy.TweepyException as e:
-        print("Tweet could not be sent")
+            print("Instagram Post could not be made")
+    except:
+        print("Instagram Post could not be sent")
 
 
 def webhook(request):
@@ -166,10 +164,11 @@ def webhook(request):
                     tweet = ("{}\n\n{}".format(video_title, video_url))
                     thumbnail(
                         "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
-                    send_tweet(tweet)
+                    send_tweet(video_title, video_url)
                     send_discord(video_info)
                     send_mobile(video_info)
                     send_browser(video_info)
+                    send_instagram(video_title)
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)
                     r.set("LAST-VIDEO-DATE", video_published)
