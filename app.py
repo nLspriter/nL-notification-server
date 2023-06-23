@@ -82,8 +82,8 @@ def load_data():
     return data
 
 
-@app.route("/post-twitch")
-def post_twitch():
+@app.route("/post-twitch/<type>")
+def post_twitch(type):
     twitch_url = "https://api.twitch.tv/helix/streams?user_login={}".format(
         os.getenv("USERNAME").lower())
     request_header = {
