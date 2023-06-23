@@ -96,21 +96,21 @@ def post_twitch(type):
         stream_game = "{}".format(response["data"][0]["game_name"])
         twitch_url = "https://www.twitch.tv/{}/".format(
             os.getenv("USERNAME").lower())
-        tweet = "{} [{}]\n\n{}".format(stream_title, stream_game, twitch_url)
+        tweet = "{} [{}]".format(stream_title, stream_game)
         r.set("STREAM-TITLE", stream_title.rstrip())
         r.set("STREAM-GAME", "[{}]".format(stream_game))
         thumbnail("https://static-cdn.jtvnw.net/previews-ttv/live_user_{}.jpg".format(
             os.getenv("USERNAME").lower()))
         match type:
             case "twitter":
-                twitch.send_tweet(tweet)
+                twitch.send_tweet(tweet, twitch_url)
             case "discord":
                 twitch.send_discord()
             case "app":
                 twitch.send_mobile()
                 twitch.send_browser()
             case _:
-                twitch.send_tweet(tweet)
+                twitch.send_tweet(tweet, twitch_url)
                 twitch.send_discord()
                 twitch.send_mobile()
                 twitch.send_browser()
@@ -135,16 +135,16 @@ def post_youtube(type):
             "https://img.youtube.com/vi/{}/maxresdefault.jpg".format(video_id))
         match type:
             case "twitter":
-                youtube.send_tweet(tweet)
+                youtube.send_tweet(video_title, video_url)
             case "discord":
                 youtube.send_discord(video_info)
             case "app":
                 youtube.send_mobile(video_info)
                 youtube.send_browser(video_info)
-            case "instagram":
-                youtube.send_instagram(tweet)
+            # case "instagram":
+            #     youtube.send_instagram(tweet)
             case _:
-                youtube.send_tweet(tweet)
+                youtube.send_tweet(video_title, video_url)
                 youtube.send_discord(video_info)
                 youtube.send_mobile(video_info)
                 youtube.send_browser(video_info)

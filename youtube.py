@@ -168,7 +168,7 @@ def webhook(request):
                     send_discord(video_info)
                     send_mobile(video_info)
                     send_browser(video_info)
-                    send_instagram(video_title)
+                    # send_instagram(video_title)
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)
                     r.set("LAST-VIDEO-DATE", video_published)

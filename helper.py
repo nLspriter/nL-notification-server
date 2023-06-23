@@ -21,8 +21,8 @@ client = tweepy.Client(os.getenv("TWITTER-BEARER-TOKEN"), os.getenv(
 api = tweepy.API(auth)
 
 
-cl = igc()
-cl.login(os.getenv("INSTAGRAM-USERNAME"), os.getenv("INSTAGRAM-PASSWORD"))
+# cl = igc()
+# cl.login(os.getenv("INSTAGRAM-USERNAME"), os.getenv("INSTAGRAM-PASSWORD"))
 
 BASE_URL = "https://fcm.googleapis.com"
 FCM_ENDPOINT = "v1/projects/{}/messages:send".format(
