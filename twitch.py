@@ -21,7 +21,7 @@ def send_tweet(title, url):
                 text="WE'RE LIVE!\n{}".format(title), media_ids=media_ids
             )
             reply = client.create_tweet(
-                text=url, in_reply_to_tweet_id=initial.data["id"])
+                text="Click here to watch! {}".format(url), in_reply_to_tweet_id=initial.data["id"])
         else:
             initial = client.create_tweet(
                 text="WE'RE LIVE!\n{}".format(title))
