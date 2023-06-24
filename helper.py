@@ -10,7 +10,7 @@ import firebase_admin
 import firebase_admin.messaging as messaging
 from functools import wraps
 from flask import request, Response
-from instagrapi import Client as igc
+# from instagrapi import Client as igc
 
 auth = tweepy.OAuth1UserHandler(os.getenv(
     "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"), os.getenv("TWITTER-ACCESS-TOKEN"),
