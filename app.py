@@ -106,7 +106,7 @@ def post_twitch(type):
                 twitch.send_tweet(tweet, twitch_url)
             case "discord":
                 twitch.send_discord()
-            case "app":
+            case "firebase":
                 twitch.send_mobile()
                 twitch.send_browser()
             case _:
@@ -138,7 +138,7 @@ def post_youtube(type):
                 youtube.send_tweet(video_title, video_url)
             case "discord":
                 youtube.send_discord(video_info)
-            case "app":
+            case "firebase":
                 youtube.send_mobile(video_info)
                 youtube.send_browser(video_info)
             # case "instagram":

@@ -22,7 +22,7 @@
   <script type="text/javascript">
     $(function () {
       $('#post-twitch').on('click', function (e) {
-        $.getJSON('/post-twitch',
+        $.getJSON('/post-twitch/all',
           function (data) {
           });
         return false;
@@ -32,7 +32,7 @@
   <script type="text/javascript">
     $(function () {
       $('#post-youtube').on('click', function (e) {
-        $.getJSON('/post-youtube',
+        $.getJSON('/post-youtube/all',
           function (data) {
           });
         return false;
