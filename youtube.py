@@ -155,9 +155,9 @@ def webhook(request):
                 else:
                     print("Video is not live yet")
                     return make_response("success", 201)
-            else:
-                print("Video already posted")
-                return make_response("success", 201)
+            # else:
+            #     print("Video already posted")
+            #     return make_response("success", 201)
 
             if not is_short(video_id):
                 if "twitch.tv/newlegacyinc" not in video_title.lower() and comparedate(video_published, r.get("LAST-VIDEO-DATE")):
