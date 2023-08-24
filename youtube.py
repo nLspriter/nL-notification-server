@@ -150,9 +150,12 @@ def webhook(request):
                 os.getenv("YOUTUBE-API-KEY"), video_id)).json()
 
             if video_id not in r.smembers("VIDEOS-POSTED"):
-                if response["items"][0]["snippet"]["liveBroadcastContent"].lower() == "upcoming":
+                if response["items"][0]["snippet"]["liveBroadcastContent"].lower() != "upcoming":
+                    r.sadd("VIDEOS-POSTED", video_id)
+                else:
                     print("Video is not live yet")
                     return make_response("success", 201)
+                
             else:
                 print("Video already posted")
                 return make_response("success", 201)
@@ -170,7 +173,6 @@ def webhook(request):
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)
                     r.set("LAST-VIDEO-DATE", video_published)
-                    r.sadd("VIDEOS-POSTED", video_id)
         except KeyError:
             print("Video deleted, retrieving last video from channel")
             try:
