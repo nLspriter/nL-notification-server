@@ -114,6 +114,7 @@ def post_twitch(type):
                 twitch.send_discord()
                 twitch.send_mobile()
                 twitch.send_browser()
+                twitch.send_atproto(tweet, twitch_url)
     except Exception:
         send_discord_error(traceback.format_exc())
     return make_response("success", 201)
@@ -148,6 +149,7 @@ def post_youtube(type):
                 youtube.send_discord(video_info)
                 youtube.send_mobile(video_info)
                 youtube.send_browser(video_info)
+                youtube.send_atproto(video_title, video_url)
         # r.set("LAST-VIDEO", video_id)
         # r.set("LAST-VIDEO-TITLE", video_title)
         # r.set("LAST-VIDEO-DATE", video_published)

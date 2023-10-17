@@ -9,17 +9,17 @@ import traceback
 def send_tweet(title, url):
     try:
         if os.path.exists("thumbnail.jpg"):
-            media = api.media_upload("thumbnail.jpg")
+            media = twitterAPI.media_upload("thumbnail.jpg")
             media_ids = [media.media_id]
-            initial = client.create_tweet(
+            initial = twitterClient.create_tweet(
                 text="NEW VIDEO!\n{}".format(title), media_ids=media_ids
             )
-            reply = client.create_tweet(
+            reply = twitterClient.create_tweet(
                 text="Click here to watch! {}".format(url), in_reply_to_tweet_id=initial.data["id"])
         else:
-            initial = client.create_tweet(
+            initial = twitterClient.create_tweet(
                 text="NEW VIDEO!\n{}".format(title))
-            reply = client.create_tweet(
+            reply = twitterClient.create_tweet(
                 text=url, in_reply_to_tweet_id=initial.data["id"])
         print("Tweet sent")
     except tweepy.TweepyException as e:
@@ -118,6 +118,37 @@ def send_browser(data):
         print("Unable to send message to Firebase")
         print(resp.text)
 
+def send_atproto(title, url):
+    text = ("NEW VIDEO!\n{}\n\nClick here to watch!".format(title))
+    facets = []
+
+    facets.append(
+        atproto.models.AppBskyRichtextFacet.Main(
+            features=[atproto.models.AppBskyRichtextFacet.Link(uri=url)],
+            index=atproto.models.AppBskyRichtextFacet.ByteSlice(
+                byte_start=text.index("Click") + 2, byte_end=len(text.encode('UTF-8'))),
+        )
+    )
+
+    if os.path.exists("thumbnail.jpg"):
+        with open('thumbnail.jpg', 'rb') as f:
+            img_data = f.read()
+
+            upload = blueSkyClient.com.atproto.repo.upload_blob(img_data)
+            images = [atproto.models.AppBskyEmbedImages.Image(
+                alt='Img alt', image=upload.blob)]
+            embed = atproto.models.AppBskyEmbedImages.Main(images=images)
+
+            blueSkyClient.com.atproto.repo.create_record(
+                atproto.models.ComAtprotoRepoCreateRecord.Data(
+                    repo=blueSkyClient.me.did,
+                    collection=atproto.models.ids.AppBskyFeedPost,
+                    record=atproto.models.AppBskyFeedPost.Main(
+                        created_at=blueSkyClient.get_current_time_iso(), text=text, embed=embed, facets=facets
+                    ),
+                )
+            )
+        
 
 # def send_instagram(title):
 #     try:
@@ -169,6 +200,7 @@ def webhook(request):
                     send_discord(video_info)
                     send_mobile(video_info)
                     send_browser(video_info)
+                    send_atproto(video_title, video_url)
                     # send_instagram(video_title)
                     r.set("LAST-VIDEO", video_id)
                     r.set("LAST-VIDEO-TITLE", video_title)

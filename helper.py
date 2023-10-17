@@ -10,16 +10,20 @@ import firebase_admin
 import firebase_admin.messaging as messaging
 from functools import wraps
 from flask import request, Response
+import atproto
 # from instagrapi import Client as igc
 
-auth = tweepy.OAuth1UserHandler(os.getenv(
+twitterAuth = tweepy.OAuth1UserHandler(os.getenv(
     "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"), os.getenv("TWITTER-ACCESS-TOKEN"),
     os.getenv("TWITTER-ACCESS-SECRET"))
-client = tweepy.Client(os.getenv("TWITTER-BEARER-TOKEN"), os.getenv(
+twitterClient = tweepy.Client(os.getenv("TWITTER-BEARER-TOKEN"), os.getenv(
     "TWITTER-CONSUMER-KEY"), os.getenv("TWITTER-CONSUMER-SECRET"), os.getenv("TWITTER-ACCESS-TOKEN"),
     os.getenv("TWITTER-ACCESS-SECRET"))
-api = tweepy.API(auth)
+twitterAPI = tweepy.API(twitterAuth)
 
+
+blueSkyClient = atproto.Client()
+blueSkyProfile = blueSkyClient.login(os.getenv("BSKY-USER"), os.getenv("BSKY-PASS"))
 
 # cl = igc()
 # cl.login(os.getenv("INSTAGRAM-USERNAME"), os.getenv("INSTAGRAM-PASSWORD"))
