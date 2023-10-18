@@ -108,3 +108,20 @@ def requires_auth(f):
             return authenticate()
         return f(*args, **kwargs)
     return decorated
+
+def extract_url_byte_positions(text, *, encoding='UTF-8'):
+    """
+    If aggressive is False, only links beginning http or https will be detected
+    """
+    encoded_text = text.encode(encoding)
+
+    pattern = rb'Click here to watch!'
+
+    matches = re.finditer(pattern, encoded_text)
+    url_byte_positions = []
+    for match in matches:
+        url_bytes = match.group(0)
+        url = url_bytes.decode(encoding)
+        url_byte_positions.append((url, match.start(), match.end()))
+
+    return url_byte_positions

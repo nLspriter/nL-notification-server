@@ -120,15 +120,17 @@ def send_browser(data):
 
 def send_atproto(title, url):
     text = ("NEW VIDEO!\n{}\n\nClick here to watch!".format(title))
+    url_positions = extract_url_byte_positions(text)
     facets = []
 
-    facets.append(
-        atproto.models.AppBskyRichtextFacet.Main(
-            features=[atproto.models.AppBskyRichtextFacet.Link(uri=url)],
-            index=atproto.models.AppBskyRichtextFacet.ByteSlice(
-                byte_start=text.index("Click") + 2, byte_end=len(text.encode('UTF-8'))),
+    for link in url_positions:
+        facets.append(
+            atproto.models.AppBskyRichtextFacet.Main(
+                features=[atproto.models.AppBskyRichtextFacet.Link(uri=url)],
+                index=atproto.models.AppBskyRichtextFacet.ByteSlice(
+                    byte_start=link[1], byte_end=link[2]),
+            )
         )
-    )
 
     if os.path.exists("thumbnail.jpg"):
         with open('thumbnail.jpg', 'rb') as f:
